@@ -81,6 +81,9 @@ export const uploadRequestSchema = z.object({
   fileType: z.string().min(1, "File type is required"),
   fileName: z.string().min(1, "File name is required"),
   fileSize: z.number().min(1, "File size must be positive").max(50 * 1024 * 1024, "File too large (max 50MB)"),
+  uploadFee: z.string().optional(),
+  paymentTxHash: z.string().optional(),
+  creatorAddress: z.string().min(1, "Creator address is required"),
 });
 
 // Trade request schema

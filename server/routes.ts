@@ -42,6 +42,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get upload cost estimate
+  app.post("/api/upload/estimate", async (req, res) => {
+    try {
+      const { fileSize } = req.body;
+      
+      if (!fileSize || typeof fileSize !== 'number' || fileSize <= 0) {
+        return res.status(400).json({ error: "Valid file size is required" });
+      }
+
+      const estimatedCost = await irysService.getUploadCost(fileSize);
+      
+      res.json({ 
+        fileSize,
+        estimatedCost,
+        estimatedCostETH: estimatedCost,
+        message: `Estimated cost for ${(fileSize / 1024 / 1024).toFixed(2)} MB: ${estimatedCost} ETH`
+      });
+    } catch (error) {
+      console.error("Failed to estimate upload cost:", error);
+      res.status(500).json({ error: "Failed to estimate cost" });
+    }
+  });
+
   // Upload file and create data token
   app.post("/api/upload", upload.single("file"), async (req, res) => {
     try {
@@ -56,6 +79,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         fileType: req.file.mimetype,
         fileName: req.file.originalname,
         fileSize: req.file.size,
+        uploadFee: req.body.uploadFee,
+        paymentTxHash: req.body.paymentTxHash,
+        creatorAddress: req.body.creatorAddress,
       });
 
       if (!validation.success) {
@@ -67,13 +93,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
-      const { name, description } = validation.data;
-      const creatorAddress = req.body.creatorAddress;
+      const { name, description, uploadFee, paymentTxHash, creatorAddress } = validation.data;
 
-      if (!creatorAddress) {
+      // Check if payment is required and provided
+      const requiredFee = parseFloat(uploadFee || "0.01");
+      if (requiredFee > 0 && !paymentTxHash) {
         fs.unlinkSync(req.file.path);
-        return res.status(400).json({ error: "Creator address is required" });
+        return res.status(400).json({ 
+          error: "Payment required", 
+          message: `Please pay ${requiredFee} testnet tokens to upload this file`,
+          requiredFee: requiredFee.toString()
+        });
       }
+
+      // Calculate upload cost for transparency
+      const estimatedCost = await irysService.getUploadCost(req.file.size);
+      console.log(`📊 Upload cost: ${estimatedCost} ETH for ${req.file.size} bytes (paid: ${uploadFee || "0"} testnet tokens)`);
 
       // Upload to Irys
       const irysResult = await irysService.uploadFile(req.file.path, {
@@ -84,6 +119,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
 
       // Create smart contract token
+      const symbol = `DATA${Date.now().toString().slice(-6)}`; // Unique symbol
       const contractResult = await contractService.createDataToken(
         name,
         irysResult.id,
@@ -93,32 +129,44 @@ export async function registerRoutes(app: Express): Promise<Server> {
           fileSize: req.file.size,
           fileType: req.file.mimetype,
           uploadedAt: new Date().toISOString(),
+          uploadCost: estimatedCost,
+          paymentTxHash: paymentTxHash || "mock-payment",
+          symbol: symbol
         })
       );
 
-      // Store in database
+      // Store in database with trading parameters
       const dataToken = await storage.createDataToken({
         tokenAddress: contractResult.tokenAddress,
         irysTransactionId: irysResult.id,
         name,
+        symbol: symbol,
         description: description || "",
         creatorAddress,
         fileSize: req.file.size,
         fileType: req.file.mimetype,
         fileName: req.file.originalname,
+        currentPrice: requiredFee, // Use upload fee as initial trading price
+        totalSupply: "1000000", // 1M tokens available for trading
+        volume24h: 0,
+        priceChange24h: 0
       });
 
       // Update user stats
-      const user = await storage.getUser(creatorAddress);
-      if (user) {
+      const existingUser = await storage.getUser(creatorAddress);
+      if (existingUser) {
         await storage.updateUserStats(
           creatorAddress,
-          (user.totalUploads || 0) + 1
+          (existingUser.totalUploads || 0) + 1,
+          undefined,
+          (existingUser.totalVolume || 0) + requiredFee
         );
       } else {
         await storage.createUser({
           walletAddress: creatorAddress,
           totalUploads: 1,
+          totalTrades: 0,
+          totalVolume: requiredFee
         });
       }
 

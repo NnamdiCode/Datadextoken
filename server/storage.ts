@@ -217,13 +217,13 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getAllDataTokens(limit = 100, offset = 0): Promise<DataToken[]> {
-    return await db.select().from(dataTokens).orderBy(desc(dataTokens.createdAt)).limit(limit).offset(offset);
+    return await db.select().from(dataTokens).orderBy(desc(dataTokens.id)).limit(limit).offset(offset);
   }
 
   async searchDataTokens(query: string): Promise<DataToken[]> {
     return await db.select().from(dataTokens).where(
       like(dataTokens.name, `%${query}%`)
-    ).orderBy(desc(dataTokens.createdAt));
+    ).orderBy(desc(dataTokens.id));
   }
 
   async createDataToken(token: InsertDataToken): Promise<DataToken> {
@@ -251,14 +251,14 @@ export class DatabaseStorage implements IStorage {
   async getTradesByUser(userAddress: string, limit = 50): Promise<Trade[]> {
     return await db.select().from(trades)
       .where(eq(trades.userAddress, userAddress))
-      .orderBy(desc(trades.timestamp))
+      .orderBy(desc(trades.id))
       .limit(limit);
   }
 
   async getTradesByToken(tokenAddress: string, limit = 50): Promise<Trade[]> {
     return await db.select().from(trades)
       .where(eq(trades.tokenAddress, tokenAddress))
-      .orderBy(desc(trades.timestamp))
+      .orderBy(desc(trades.id))
       .limit(limit);
   }
 
@@ -269,7 +269,7 @@ export class DatabaseStorage implements IStorage {
 
   async getRecentTrades(limit = 20): Promise<Trade[]> {
     return await db.select().from(trades)
-      .orderBy(desc(trades.timestamp))
+      .orderBy(desc(trades.id))
       .limit(limit);
   }
 
@@ -286,7 +286,7 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getAllLiquidityPools(): Promise<LiquidityPool[]> {
-    return await db.select().from(liquidityPools).orderBy(desc(liquidityPools.createdAt));
+    return await db.select().from(liquidityPools).orderBy(desc(liquidityPools.id));
   }
 
   async createLiquidityPool(pool: InsertLiquidityPool): Promise<LiquidityPool> {

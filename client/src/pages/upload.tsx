@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { ArrowRight, Check, Clock, FileText, Info, Upload, BarChart2 } from 'lucide-react';
+import { ArrowRight, Check, Clock, FileText, Info, Upload, BarChart2, AlertCircle } from 'lucide-react';
 import GlassCard from '../components/GlassCard';
 import Button from '../components/Button';
 import { useToast } from '../hooks/use-toast';
@@ -16,6 +16,9 @@ export default function UploadPage() {
   const [selectedFee, setSelectedFee] = useState('0.05');
   const [isConfirmationOpen, setIsConfirmationOpen] = useState(false);
   const [tokenResult, setTokenResult] = useState<any>(null);
+  const [paymentTxHash, setPaymentTxHash] = useState('');
+  const [uploadCost, setUploadCost] = useState<string>('');
+  const [isPaymentComplete, setIsPaymentComplete] = useState(false);
   
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -23,6 +26,13 @@ export default function UploadPage() {
 
   const uploadMutation = useMutation({
     mutationFn: async (formData: FormData) => {
+      // Add payment information to form data
+      formData.append('uploadFee', selectedFee);
+      formData.append('creatorAddress', account || '');
+      if (paymentTxHash) {
+        formData.append('paymentTxHash', paymentTxHash);
+      }
+      
       const response = await fetch('/api/upload', {
         method: 'POST',
         body: formData,
@@ -37,8 +47,11 @@ export default function UploadPage() {
     },
     onSuccess: (data) => {
       setTokenResult(data);
-      setStep(3);
-      toast({ title: 'Your data has been successfully uploaded and tokenized!' });
+      setStep(4); // Move to final step
+      toast({ 
+        title: 'Success!', 
+        description: 'Your data has been uploaded and tokenized for trading' 
+      });
       queryClient.invalidateQueries({ queryKey: ['/api/tokens'] });
     },
     onError: (error: any) => {
@@ -75,6 +88,9 @@ export default function UploadPage() {
     setDescription('');
     setSelectedFee('0.05');
     setTokenResult(null);
+    setPaymentTxHash('');
+    setUploadCost('');
+    setIsPaymentComplete(false);
   };
   
   const handleUpload = async () => {
@@ -114,7 +130,7 @@ export default function UploadPage() {
       
       {/* Steps progress */}
       <div className="flex justify-between items-center mb-10 px-2">
-        {[1, 2, 3].map((i) => (
+        {[1, 2, 3, 4].map((i) => (
           <div key={i} className="flex flex-col items-center relative">
             <div className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-medium transition-colors ${
               step === i 
@@ -126,11 +142,11 @@ export default function UploadPage() {
               {step > i ? <Check size={18} /> : i}
             </div>
             <span className={`mt-2 text-xs transition-colors ${step >= i ? 'text-white' : 'text-gray-400'}`}>
-              {i === 1 ? 'Upload' : i === 2 ? 'Configure' : 'Complete'}
+              {i === 1 ? 'Upload' : i === 2 ? 'Configure' : i === 3 ? 'Payment' : 'Complete'}
             </span>
             
             {/* Connector line */}
-            {i < 3 && (
+            {i < 4 && (
               <div className="absolute top-5 left-10 w-full h-[2px] bg-white/10">
                 <div 
                   className={`h-full bg-primary transition-all duration-500 ${
@@ -293,16 +309,101 @@ export default function UploadPage() {
               </Button>
               
               <Button 
-                onClick={() => setIsConfirmationOpen(true)} 
+                onClick={() => setStep(3)} 
                 disabled={!name || !isConnected}
               >
-                {!isConnected ? 'Connect Wallet' : 'Upload & Pay'}
+                {!isConnected ? 'Connect Wallet' : 'Continue to Payment'}
               </Button>
             </div>
           </div>
         )}
         
-        {step === 3 && tokenResult && (
+        {step === 3 && !tokenResult && (
+          <div className="p-6">
+            <h2 className="text-xl font-medium mb-4">Payment & Upload</h2>
+            
+            <div className="mb-6">
+              <div className="flex items-center justify-between p-4 bg-white/5 rounded-lg border border-white/10">
+                <div>
+                  <h3 className="font-medium">Upload Summary</h3>
+                  <p className="text-sm text-gray-400 mt-1">File: {file?.name}</p>
+                  <p className="text-sm text-gray-400">Size: {file ? (file.size / 1024 / 1024).toFixed(2) : '0'} MB</p>
+                </div>
+                <div className="text-right">
+                  <p className="text-lg font-medium">{selectedFee} ETH</p>
+                  <p className="text-xs text-gray-400">Upload Fee</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="space-y-4 mb-6">
+              <div className="p-4 bg-yellow-500/10 border border-yellow-500/30 rounded-lg">
+                <div className="flex items-start">
+                  <AlertCircle size={16} className="text-yellow-400 mt-0.5 mr-2 flex-shrink-0" />
+                  <div>
+                    <p className="text-sm font-medium text-yellow-300">Payment Required</p>
+                    <p className="text-xs text-gray-300 mt-1">
+                      You need to pay {selectedFee} ETH testnet tokens to upload and tokenize your data. 
+                      This fee covers Irys storage costs and creates your tradable data token.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {paymentTxHash && (
+                <div className="p-4 bg-green-500/10 border border-green-500/30 rounded-lg">
+                  <div className="flex items-start">
+                    <Check size={16} className="text-green-400 mt-0.5 mr-2 flex-shrink-0" />
+                    <div>
+                      <p className="text-sm font-medium text-green-300">Payment Confirmed</p>
+                      <p className="text-xs text-gray-300 mt-1 font-mono">
+                        Transaction: {paymentTxHash.slice(0, 10)}...{paymentTxHash.slice(-6)}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <div className="flex justify-between">
+              <Button 
+                variant="outline" 
+                onClick={() => setStep(2)}
+              >
+                Back
+              </Button>
+              
+              <div className="flex gap-3">
+                {!paymentTxHash && (
+                  <Button 
+                    variant="outline"
+                    onClick={() => {
+                      // Mock payment for demo - in production, integrate with wallet
+                      const mockTxHash = '0x' + Math.random().toString(16).substr(2, 64);
+                      setPaymentTxHash(mockTxHash);
+                      setIsPaymentComplete(true);
+                      toast({ 
+                        title: 'Payment Simulated', 
+                        description: 'In production, this would connect to your wallet' 
+                      });
+                    }}
+                  >
+                    Simulate Payment
+                  </Button>
+                )}
+                
+                <Button 
+                  onClick={() => setIsConfirmationOpen(true)}
+                  disabled={!paymentTxHash}
+                >
+                  Upload & Tokenize
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {step === 4 && tokenResult && (
           <div className="p-6">
             <div className="text-center py-4">
               <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-green-500/20 text-green-400 mb-4">
@@ -410,7 +511,7 @@ export default function UploadPage() {
             className="w-full max-w-md"
           >
             <GlassCard className="p-6">
-              <h3 className="text-xl font-medium mb-4">Confirm Upload</h3>
+              <h3 className="text-xl font-medium mb-4">Confirm Upload & Tokenization</h3>
               
               <div className="space-y-4 mb-6">
                 <div className="flex justify-between">
@@ -424,15 +525,25 @@ export default function UploadPage() {
                 </div>
                 
                 <div className="flex justify-between">
-                  <span className="text-gray-400">Fee</span>
+                  <span className="text-gray-400">Upload Fee</span>
                   <span className="font-medium">{selectedFee} ETH</span>
                 </div>
+
+                {paymentTxHash && (
+                  <div className="flex justify-between">
+                    <span className="text-gray-400">Payment Status</span>
+                    <span className="text-green-400 font-medium">✓ Paid</span>
+                  </div>
+                )}
                 
                 <div className="border-t border-white/10 pt-4">
                   <div className="flex justify-between font-medium">
-                    <span>Total</span>
+                    <span>Total Cost</span>
                     <span>{selectedFee} ETH</span>
                   </div>
+                  <p className="text-xs text-gray-400 mt-1">
+                    This creates a tradable data token with 1M supply at {selectedFee} ETH initial price
+                  </p>
                 </div>
               </div>
               
@@ -451,15 +562,17 @@ export default function UploadPage() {
                     handleUpload();
                   }}
                   className="flex-1"
-                  disabled={uploadMutation.isPending}
+                  disabled={uploadMutation.isPending || !paymentTxHash}
                 >
                   {uploadMutation.isPending ? (
                     <div className="flex items-center">
                       <Clock size={16} className="animate-spin mr-2" />
-                      Processing...
+                      Uploading to Irys...
                     </div>
+                  ) : !paymentTxHash ? (
+                    'Payment Required'
                   ) : (
-                    'Confirm & Pay'
+                    'Upload & Tokenize'
                   )}
                 </Button>
               </div>
