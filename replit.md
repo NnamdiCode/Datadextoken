@@ -23,7 +23,8 @@ Preferred communication style: Simple, everyday language.
 - **Runtime**: Node.js with Express server
 - **Language**: TypeScript with ES modules
 - **Database**: PostgreSQL with Drizzle ORM for type-safe database operations
-- **Database Provider**: Neon Database (serverless PostgreSQL)
+- **Database Provider**: Replit PostgreSQL (serverless database)
+- **Storage**: DatabaseStorage implementation replacing in-memory storage
 - **File Handling**: Multer for multipart file uploads
 - **API Design**: RESTful API with structured error handling
 
