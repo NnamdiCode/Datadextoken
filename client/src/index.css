@@ -1,0 +1,211 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: hsl(222, 84%, 4.9%);
+  --foreground: hsl(210, 40%, 98%);
+  --muted: hsl(217, 32%, 17%);
+  --muted-foreground: hsl(215, 20%, 65%);
+  --popover: hsl(222, 84%, 4.9%);
+  --popover-foreground: hsl(210, 40%, 98%);
+  --card: hsl(222, 84%, 4.9%);
+  --card-foreground: hsl(210, 40%, 98%);
+  --border: hsl(217, 32%, 17%);
+  --input: hsl(217, 32%, 17%);
+  --primary: hsl(217, 91%, 60%);
+  --primary-foreground: hsl(222, 84%, 4.9%);
+  --secondary: hsl(217, 32%, 17%);
+  --secondary-foreground: hsl(210, 40%, 98%);
+  --accent: hsl(217, 32%, 17%);
+  --accent-foreground: hsl(210, 40%, 98%);
+  --destructive: hsl(0, 62.8%, 30.6%);
+  --destructive-foreground: hsl(210, 40%, 98%);
+  --ring: hsl(217, 91%, 60%);
+  --radius: 0.5rem;
+  
+  /* Custom DataSwap colors */
+  --glass-bg: hsla(217, 32%, 17%, 0.05);
+  --glass-border: hsla(210, 40%, 98%, 0.1);
+  --gradient-from: hsl(217, 91%, 60%);
+  --gradient-via: hsl(271, 91%, 65%);
+  --gradient-to: hsl(187, 85%, 53%);
+}
+
+.dark {
+  --background: hsl(222, 84%, 4.9%);
+  --foreground: hsl(210, 40%, 98%);
+  --muted: hsl(217, 32%, 17%);
+  --muted-foreground: hsl(215, 20%, 65%);
+  --popover: hsl(222, 84%, 4.9%);
+  --popover-foreground: hsl(210, 40%, 98%);
+  --card: hsl(222, 84%, 4.9%);
+  --card-foreground: hsl(210, 40%, 98%);
+  --border: hsl(217, 32%, 17%);
+  --input: hsl(217, 32%, 17%);
+  --primary: hsl(217, 91%, 60%);
+  --primary-foreground: hsl(222, 84%, 4.9%);
+  --secondary: hsl(217, 32%, 17%);
+  --secondary-foreground: hsl(210, 40%, 98%);
+  --accent: hsl(217, 32%, 17%);
+  --accent-foreground: hsl(210, 40%, 98%);
+  --destructive: hsl(0, 62.8%, 30.6%);
+  --destructive-foreground: hsl(210, 40%, 98%);
+  --ring: hsl(217, 91%, 60%);
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply font-sans antialiased bg-background text-foreground;
+    font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  }
+  
+  html {
+    color-scheme: dark;
+  }
+}
+
+/* Custom glass effect */
+.glass-effect {
+  background: var(--glass-bg);
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--glass-border);
+}
+
+/* Gradient text utility */
+.gradient-text {
+  background: linear-gradient(135deg, var(--gradient-from), var(--gradient-via), var(--gradient-to));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-muted;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-muted-foreground opacity-30 rounded-full;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-muted-foreground opacity-50;
+}
+
+/* Remove number input arrows */
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+input[type=number] {
+  -moz-appearance: textfield;
+}
+
+/* Button glow effects */
+.btn-glow-blue:hover {
+  box-shadow: 0 0 15px hsla(217, 91%, 60%, 0.5);
+}
+
+.btn-glow-purple:hover {
+  box-shadow: 0 0 15px hsla(271, 91%, 65%, 0.5);
+}
+
+/* Animation for gradient background */
+@keyframes gradientShift {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+.animate-gradient {
+  background-size: 200% 200%;
+  animation: gradientShift 15s ease infinite;
+}
+
+/* Pulse glow animation */
+@keyframes pulse-glow {
+  0%, 100% { 
+    box-shadow: 0 0 15px hsla(217, 91%, 60%, 0.3); 
+  }
+  50% { 
+    box-shadow: 0 0 25px hsla(217, 91%, 60%, 0.6); 
+  }
+}
+
+.pulse-glow {
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+/* Chart.js tooltip styling */
+.chartjs-tooltip {
+  background: hsla(222, 84%, 4.9%, 0.9) !important;
+  border: 1px solid var(--glass-border) !important;
+  border-radius: 0.5rem !important;
+}
+
+/* Status indicators */
+.status-indicator {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+  margin-right: 8px;
+}
+
+.status-online { 
+  background-color: hsl(142, 76%, 36%); 
+}
+
+.status-pending { 
+  background-color: hsl(38, 92%, 50%); 
+}
+
+.status-offline { 
+  background-color: hsl(0, 84%, 60%); 
+}
+
+/* Code block styling */
+.code-block {
+  background: hsla(222, 84%, 4.9%, 0.8);
+  border: 1px solid hsla(217, 32%, 17%, 0.3);
+}
+
+/* Line clamp utility */
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Focus styles */
+.focus-ring {
+  @apply focus:outline-none focus:ring-2 focus:ring-primary focus:ring-opacity-50 focus:border-primary;
+}
+
+/* Transition utilities */
+.transition-all-200 {
+  transition: all 200ms ease-in-out;
+}
+
+.transition-colors-200 {
+  transition: color 200ms ease-in-out, background-color 200ms ease-in-out, border-color 200ms ease-in-out;
+}
