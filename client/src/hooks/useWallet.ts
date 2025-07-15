@@ -1,5 +1,5 @@
-import { useState, useEffect, createContext, useContext } from 'react';
-import { ethers } from 'ethers';
+import { useState, useEffect, createContext, useContext } from "react";
+import { ethers } from "ethers";
 
 interface WalletContextType {
   account: string | null;
@@ -20,21 +20,26 @@ export function useWallet() {
     const [account, setAccount] = useState<string | null>(null);
     const [isConnected, setIsConnected] = useState(false);
     const [isConnecting, setIsConnecting] = useState(false);
-    const [provider, setProvider] = useState<ethers.BrowserProvider | null>(null);
+    const [provider, setProvider] = useState<ethers.BrowserProvider | null>(
+      null,
+    );
     const [signer, setSigner] = useState<ethers.JsonRpcSigner | null>(null);
 
     useEffect(() => {
       checkConnection();
-      
+
       if (window.ethereum) {
-        window.ethereum.on('accountsChanged', handleAccountsChanged);
-        window.ethereum.on('chainChanged', handleChainChanged);
+        window.ethereum.on("accountsChanged", handleAccountsChanged);
+        window.ethereum.on("chainChanged", handleChainChanged);
       }
 
       return () => {
         if (window.ethereum) {
-          window.ethereum.removeListener('accountsChanged', handleAccountsChanged);
-          window.ethereum.removeListener('chainChanged', handleChainChanged);
+          window.ethereum.removeListener(
+            "accountsChanged",
+            handleAccountsChanged,
+          );
+          window.ethereum.removeListener("chainChanged", handleChainChanged);
         }
       };
     }, []);
@@ -44,7 +49,7 @@ export function useWallet() {
         try {
           const provider = new ethers.BrowserProvider(window.ethereum);
           const accounts = await provider.listAccounts();
-          
+
           if (accounts.length > 0) {
             setAccount(accounts[0].address);
             setIsConnected(true);
@@ -52,7 +57,7 @@ export function useWallet() {
             setSigner(await provider.getSigner());
           }
         } catch (error) {
-          console.error('Error checking wallet connection:', error);
+          console.error("Error checking wallet connection:", error);
         }
       }
     };
@@ -71,26 +76,26 @@ export function useWallet() {
 
     const connect = async () => {
       if (!window.ethereum) {
-        alert('Please install MetaMask or another Ethereum wallet');
+        alert("Please install MetaMask or another Ethereum wallet");
         return;
       }
 
       try {
         setIsConnecting(true);
         const provider = new ethers.BrowserProvider(window.ethereum);
-        
+
         // Request account access
         await provider.send("eth_requestAccounts", []);
-        
+
         const signer = await provider.getSigner();
         const address = await signer.getAddress();
-        
+
         setAccount(address);
         setIsConnected(true);
         setProvider(provider);
         setSigner(signer);
       } catch (error) {
-        console.error('Error connecting wallet:', error);
+        console.error("Error connecting wallet:", error);
         throw error;
       } finally {
         setIsConnecting(false);
