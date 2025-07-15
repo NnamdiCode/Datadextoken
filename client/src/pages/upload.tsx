@@ -455,7 +455,7 @@ export default function UploadPage() {
                   <div className="flex justify-between items-center mb-4">
                     <span className="text-sm text-gray-400">Token ID</span>
                     <span className="text-sm font-mono bg-white/5 px-2 py-1 rounded">
-                      {tokenResult.token.symbol}
+                      {tokenResult.token.name}
                     </span>
                   </div>
                   
@@ -474,13 +474,13 @@ export default function UploadPage() {
                   <div className="flex justify-between items-center mb-4">
                     <span className="text-sm text-gray-400">Contract</span>
                     <span className="text-sm font-mono">
-                      {tokenResult.token.tokenAddress.slice(0, 8)}...
+                      0x{tokenResult.token.irysTransactionId.slice(0, 8)}...
                     </span>
                   </div>
                   
                   <div className="flex justify-between items-center">
                     <span className="text-sm text-gray-400">Fee Paid</span>
-                    <span className="text-sm">{selectedFee} IRYS</span>
+                    <span className="text-sm">0.005 IRYS</span>
                   </div>
                 </div>
               </GlassCard>
@@ -549,10 +549,6 @@ export default function UploadPage() {
               <h3 className="text-xl font-medium mb-4">Confirm Upload & Tokenization</h3>
               
               <div className="space-y-4 mb-6">
-                <div className="flex justify-between">
-                  <span className="text-gray-400">File</span>
-                  <span className="font-medium">{file?.name}</span>
-                </div>
                 
                 <div className="flex justify-between">
                   <span className="text-gray-400">Token Name</span>
@@ -561,7 +557,7 @@ export default function UploadPage() {
                 
                 <div className="flex justify-between">
                   <span className="text-gray-400">Upload Fee</span>
-                  <span className="font-medium">{selectedFee} ETH</span>
+                  <span className="font-medium">0.005 IRYS</span>
                 </div>
 
                 {paymentTxHash && (
@@ -574,10 +570,10 @@ export default function UploadPage() {
                 <div className="border-t border-white/10 pt-4">
                   <div className="flex justify-between font-medium">
                     <span>Total Cost</span>
-                    <span>{selectedFee} ETH</span>
+                    <span>0.005 IRYS</span>
                   </div>
                   <p className="text-xs text-gray-400 mt-1">
-                    This creates a tradable data token with 1M supply at {selectedFee} ETH initial price
+                    This creates a tradable data token with 1M supply at 0.005 IRYS initial price
                   </p>
                 </div>
               </div>

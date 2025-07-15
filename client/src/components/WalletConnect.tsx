@@ -31,8 +31,11 @@ export default function WalletConnect() {
 
   const fetchUserDataTokens = async () => {
     try {
-      // This will be replaced with actual contract call
-      setDataTokens([]); // Mock empty array for now
+      const response = await fetch(`/api/tokens/creator/${account}`);
+      if (response.ok) {
+        const data = await response.json();
+        setDataTokens(data.tokens || []);
+      }
     } catch (error) {
       console.error('Failed to fetch user data tokens:', error);
     }

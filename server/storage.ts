@@ -7,6 +7,7 @@ export interface IStorage {
   getDataTokenByIrysId(irysId: string): Promise<DataToken | undefined>;
   getAllDataTokens(limit?: number, offset?: number): Promise<DataToken[]>;
   searchDataTokens(query: string): Promise<DataToken[]>;
+  getTokensByCreator(creatorAddress: string): Promise<DataToken[]>;
   createDataToken(token: InsertDataToken): Promise<DataToken>;
   updateDataTokenPrice(address: string, price: number, volume24h?: number, priceChange24h?: number): Promise<void>;
 
@@ -74,6 +75,12 @@ export class MemStorage implements IStorage {
     );
   }
 
+  async getTokensByCreator(creatorAddress: string): Promise<DataToken[]> {
+    return Array.from(this.dataTokens.values()).filter(token => 
+      token.creatorAddress.toLowerCase() === creatorAddress.toLowerCase()
+    );
+  }
+
   async createDataToken(insertToken: InsertDataToken): Promise<DataToken> {
     const token: DataToken = {
       id: this.currentId++,
@@ -120,7 +127,53 @@ export class MemStorage implements IStorage {
       executedAt: new Date(),
     };
     this.trades.set(trade.id, trade);
+    
+    // Update dynamic pricing based on supply and demand
+    await this.updateDynamicPricing(insertTrade.fromTokenAddress, insertTrade.toTokenAddress, insertTrade.amountIn, insertTrade.amountOut);
+    
     return trade;
+  }
+
+  // Dynamic pricing algorithm
+  async updateDynamicPricing(fromTokenAddress: string, toTokenAddress: string, amountIn: string, amountOut: string): Promise<void> {
+    const fromToken = await this.getDataTokenByAddress(fromTokenAddress);
+    const toToken = await this.getDataTokenByAddress(toTokenAddress);
+    
+    if (!fromToken || !toToken) return;
+    
+    // Calculate demand multiplier based on recent trading activity
+    const recentTrades = await this.getRecentTrades(20);
+    const fromTokenTrades = recentTrades.filter(t => t.toTokenAddress === fromTokenAddress).length;
+    const toTokenTrades = recentTrades.filter(t => t.toTokenAddress === toTokenAddress).length;
+    
+    // Base price increase/decrease based on demand
+    const fromDemandMultiplier = Math.max(0.5, 1 + (fromTokenTrades * 0.1));
+    const toDemandMultiplier = Math.max(0.5, 1 + (toTokenTrades * 0.1));
+    
+    // Calculate volume for 24h
+    const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
+    const recentFromTrades = recentTrades.filter(t => 
+      (t.fromTokenAddress === fromTokenAddress || t.toTokenAddress === fromTokenAddress) &&
+      new Date(t.executedAt) > oneDayAgo
+    );
+    
+    const fromVolume24h = recentFromTrades.reduce((sum, trade) => {
+      const amount = trade.fromTokenAddress === fromTokenAddress ? parseFloat(trade.amountIn) : parseFloat(trade.amountOut);
+      return sum + amount * trade.pricePerToken;
+    }, 0);
+    
+    // Calculate price change
+    const oldFromPrice = fromToken.currentPrice;
+    const newFromPrice = Math.max(0.001, oldFromPrice * fromDemandMultiplier);
+    const fromPriceChange = ((newFromPrice - oldFromPrice) / oldFromPrice) * 100;
+    
+    const oldToPrice = toToken.currentPrice;
+    const newToPrice = Math.max(0.001, oldToPrice * toDemandMultiplier);
+    const toPriceChange = ((newToPrice - oldToPrice) / oldToPrice) * 100;
+    
+    // Update token prices
+    await this.updateDataTokenPrice(fromTokenAddress, newFromPrice, fromVolume24h, fromPriceChange);
+    await this.updateDataTokenPrice(toTokenAddress, newToPrice, fromVolume24h, toPriceChange);
   }
 
   async getRecentTrades(limit = 20): Promise<Trade[]> {

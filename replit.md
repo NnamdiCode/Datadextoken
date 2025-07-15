@@ -29,11 +29,11 @@ Preferred communication style: Simple, everyday language.
 
 ### Blockchain Integration
 - **Primary Blockchain**: Irys network for permanent data storage
-- **Token Management**: 0.0001 IRYS testnet tokens for all operations
-- **Smart Contracts**: Hardhat development environment with Solidity 0.8.19
+- **Token Management**: 0.005 IRYS testnet tokens base fee for token creation
+- **Smart Contracts**: Deployed on Irys VM (Chain ID: 1270) with Solidity 0.8.19
 - **Contract Types**: 
   - DataRegistry: Manages data token creation and metadata
-  - DataAMM: Automated market maker for token trading
+  - DataAMM: Automated market maker for token trading with dynamic pricing
   - DataMarketplace: Orchestrates the overall trading ecosystem
 - **Wallet Integration**: MetaMask and other Web3 wallets via ethers.js
 - **Test Networks**: Irys testnet (Chain ID: 1270) for development testing
@@ -46,12 +46,16 @@ Preferred communication style: Simple, everyday language.
 - Optional token images can be uploaded alongside data files
 - Each upload generates a unique token representing data ownership
 - Metadata includes file information, creator details, and Irys transaction IDs
-- All operations use 0.0001 IRYS testnet tokens
+- Base fee of 0.005 IRYS testnet tokens charged for every token created
+- Token ID is the token name, contract address is actual Irys blockchain address
 
 ### Trading System
 - Automated Market Maker (AMM) for token-to-token swaps
 - Real-time price charts with dynamic token price data
 - Searchable token marketplace with filtering capabilities
+- Only last 100 tokens shown in selection dropdown, others searchable
+- Users can search and exchange any tokens with their own tokens
+- Dynamic pricing based on supply and demand market forces
 - Liquidity pools for improved trading efficiency
 - Slippage protection and transaction fee estimation
 
@@ -59,7 +63,9 @@ Preferred communication style: Simple, everyday language.
 - Web3 wallet connection with account management
 - Transaction signing for blockchain interactions
 - Balance tracking for native and data tokens
+- Wallet dropdown shows user's created tokens
 - Network switching and chain validation
+- All smart contract transactions on Irys VM and Irys devnet
 
 ### User Interface
 - Glass morphism design with gradient backgrounds

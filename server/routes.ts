@@ -138,7 +138,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         fileName: dataFile.originalname,
         imageUrl,
         totalSupply: '1000000',
-        currentPrice: 0.001, // 0.001 IRYS initial price
+        currentPrice: 0.005, // 0.005 IRYS base fee
         volume24h: 0,
         priceChange24h: 0,
       };
@@ -177,10 +177,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Get all data tokens
+  // Get all data tokens (limit to last 100 for dropdown)
   app.get("/api/tokens", async (req, res) => {
     try {
-      const limit = parseInt(req.query.limit as string) || 20;
+      const limit = parseInt(req.query.limit as string) || 100; // Only show last 100 tokens
       const offset = parseInt(req.query.offset as string) || 0;
       const search = req.query.search as string;
 
@@ -228,7 +228,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Search tokens
+  // Search tokens (unlimited search across all tokens)
   app.get("/api/search", async (req, res) => {
     try {
       const { q } = req.query;
@@ -242,6 +242,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Search failed:", error);
       res.status(500).json({ error: "Search failed" });
+    }
+  });
+
+  // Get tokens by creator address
+  app.get("/api/tokens/creator/:address", async (req, res) => {
+    try {
+      const { address } = req.params;
+      const tokens = await storage.getTokensByCreator(address);
+      
+      res.json({ tokens });
+    } catch (error) {
+      console.error("Failed to get tokens by creator:", error);
+      res.status(500).json({ error: "Failed to get tokens by creator" });
     }
   });
 

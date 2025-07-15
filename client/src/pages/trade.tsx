@@ -47,11 +47,11 @@ export default function Trade() {
   const queryClient = useQueryClient();
   const { account, isConnected } = useWallet();
 
-  // Fetch available tokens
+  // Fetch available tokens (limit to 100)
   const { data: tokensData, isLoading: tokensLoading } = useQuery({
     queryKey: ['/api/tokens', searchQuery],
     queryFn: async () => {
-      const url = searchQuery ? `/api/search?q=${encodeURIComponent(searchQuery)}` : '/api/tokens?limit=50';
+      const url = searchQuery ? `/api/search?q=${encodeURIComponent(searchQuery)}` : '/api/tokens?limit=100';
       const response = await fetch(url);
       if (!response.ok) throw new Error('Failed to fetch tokens');
       return response.json();

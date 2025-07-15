@@ -62,8 +62,8 @@ export class ContractService {
     }
     
     this.addresses = {
-      dataRegistry: process.env.DATA_REGISTRY_ADDRESS || "",
-      dataAMM: process.env.DATA_AMM_ADDRESS || "",
+      dataRegistry: process.env.DATA_REGISTRY_ADDRESS || "0x742d35Cc6634C0532925a3b8D698e9e0b5c6C9CB",
+      dataAMM: process.env.DATA_AMM_ADDRESS || "0x742d35Cc6634C0532925a3b8D698e9e0b5c6C9CB",
       network: "irys-testnet",
       explorerUrl: "https://testnet-explorer.irys.xyz",
     };
