@@ -12,6 +12,7 @@ export default function UploadPage() {
   const [file, setFile] = useState<File | null>(null);
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [step, setStep] = useState(1);
+  const [tokenId, setTokenId] = useState('');
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [selectedFee, setSelectedFee] = useState('0.0002');
@@ -20,6 +21,7 @@ export default function UploadPage() {
   const [paymentTxHash, setPaymentTxHash] = useState('');
   const [uploadCost, setUploadCost] = useState<string>('');
   const [isPaymentComplete, setIsPaymentComplete] = useState(false);
+  const [hasEnoughIrys, setHasEnoughIrys] = useState(false);
   
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -269,6 +271,26 @@ export default function UploadPage() {
             <div className="space-y-6">
               <div>
                 <label className="block text-sm font-medium text-gray-300 mb-1">
+                  Token ID*
+                </label>
+                <input 
+                  type="text" 
+                  className="w-full bg-white/5 border border-white/10 rounded-md px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary/50 text-white placeholder-gray-500"
+                  placeholder="Enter token ID (max 10 letters)"
+                  value={tokenId}
+                  onChange={(e) => {
+                    const value = e.target.value.toUpperCase().replace(/[^A-Z]/g, '');
+                    if (value.length <= 10) {
+                      setTokenId(value);
+                    }
+                  }}
+                  maxLength={10}
+                />
+                <p className="text-xs text-gray-400 mt-1">{tokenId.length}/10 characters</p>
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-1">
                   Token Name*
                 </label>
                 <input 
@@ -287,7 +309,7 @@ export default function UploadPage() {
                 </label>
                 <textarea 
                   className="w-full bg-white/5 border border-white/10 rounded-md px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary/50 text-white placeholder-gray-500 h-24 resize-none"
-                  placeholder="Describe your data (optional)"
+                  placeholder="Describe your data"
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
                   maxLength={500}
@@ -345,7 +367,7 @@ export default function UploadPage() {
               
               <Button 
                 onClick={() => setStep(3)} 
-                disabled={!name || !isConnected}
+                disabled={!tokenId || !name || !description || !isConnected}
               >
                 {!isConnected ? 'Connect Wallet' : 'Continue to Payment'}
               </Button>
@@ -365,7 +387,7 @@ export default function UploadPage() {
                   <p className="text-sm text-gray-400">Size: {file ? (file.size / 1024 / 1024).toFixed(2) : '0'} MB</p>
                 </div>
                 <div className="text-right">
-                  <p className="text-lg font-medium">{selectedFee} ETH</p>
+                  <p className="text-lg font-medium">0.005 IRYS</p>
                   <p className="text-xs text-gray-400">Upload Fee</p>
                 </div>
               </div>
@@ -378,7 +400,7 @@ export default function UploadPage() {
                   <div>
                     <p className="text-sm font-medium text-yellow-300">Payment Required</p>
                     <p className="text-xs text-gray-300 mt-1">
-                      You need to pay {selectedFee} ETH testnet tokens to upload and tokenize your data. 
+                      You need to pay 0.005 IRYS testnet tokens to upload and tokenize your data. 
                       This fee covers Irys storage costs and creates your tradable data token.
                     </p>
                   </div>

@@ -249,8 +249,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/tokens/creator/:address", async (req, res) => {
     try {
       const { address } = req.params;
-      const tokens = await storage.getTokensByCreator(address);
+      if (!address || typeof address !== 'string') {
+        return res.status(400).json({ error: "Invalid address parameter" });
+      }
       
+      const tokens = await storage.getTokensByCreator(address);
       res.json({ tokens });
     } catch (error) {
       console.error("Failed to get tokens by creator:", error);

@@ -71,7 +71,7 @@ export default function WalletConnect() {
         onClick={() => setIsDropdownOpen(!isDropdownOpen)}
         icon={<Wallet size={16} />}
       >
-        {formatAddress(account!)}
+        {irysBalance} IRYS
         <ChevronDown size={16} className="ml-2" />
       </Button>
 
@@ -85,7 +85,7 @@ export default function WalletConnect() {
           
           {/* Dropdown */}
           <div className="absolute right-0 mt-2 z-20">
-            <GlassCard className="p-4 min-w-64">
+            <div className="p-4 min-w-64 bg-gray-900 border border-gray-700 rounded-lg shadow-lg">
               <div className="space-y-3">
                 <div className="border-b border-white/10 pb-3">
                   <p className="text-sm text-gray-400 mb-1">Connected Account</p>
@@ -131,13 +131,13 @@ export default function WalletConnect() {
                   onClick={() => {
                     window.open(`https://testnet-explorer.irys.xyz/address/${account}`, '_blank');
                   }}
-                  className="w-full flex items-center px-3 py-2 text-sm text-gray-300 hover:text-white hover:bg-white/5 rounded-md transition-colors"
+                  className="w-full flex items-center px-3 py-2 text-sm text-gray-300 hover:text-white hover:bg-gray-800 rounded-md transition-colors"
                 >
                   <ExternalLink size={16} className="mr-2" />
                   View on Explorer
                 </button>
 
-                <div className="border-t border-white/10 pt-3">
+                <div className="border-t border-gray-700 pt-3">
                   <button
                     onClick={() => {
                       disconnect();
@@ -150,7 +150,7 @@ export default function WalletConnect() {
                   </button>
                 </div>
               </div>
-            </GlassCard>
+            </div>
           </div>
         </>
       )}
