@@ -126,8 +126,8 @@ export default function Trade() {
   }, [quoteData]);
 
   const filteredTokens = tokens.filter((token: any) => 
-    token.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
-    token.symbol.toLowerCase().includes(searchQuery.toLowerCase())
+    (token.name && token.name.toLowerCase().includes(searchQuery.toLowerCase())) || 
+    (token.symbol && token.symbol.toLowerCase().includes(searchQuery.toLowerCase()))
   );
 
   const handleSwapTokens = () => {
