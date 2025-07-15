@@ -287,3 +287,16 @@ export class ContractService {
 }
 
 export const contractService = new ContractService();
+
+// Real Irys blockchain configuration
+export const IRYS_CHAIN_CONFIG = {
+  chainId: 1270,
+  name: 'Irys Devnet',
+  currency: 'IRYS',
+  explorerUrl: 'https://testnet-explorer.irys.xyz',
+  rpcUrl: 'https://devnet-rpc.irys.xyz',
+  contracts: {
+    dataRegistry: '0x1234567890123456789012345678901234567890', // Replace with actual deployed contract
+    dataAMM: '0x2345678901234567890123456789012345678901' // Replace with actual deployed contract
+  }
+};

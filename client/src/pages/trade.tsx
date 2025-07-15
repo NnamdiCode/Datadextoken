@@ -311,7 +311,7 @@ export default function Trade() {
                     onClick={() => setShowTokenList('from')}
                   >
                     <span className="mr-1 text-white truncate max-w-16">
-                      {fromToken ? tokens.find((t: any) => t.tokenAddress === fromToken)?.symbol || 'Unknown' : 'Select'}
+                      {fromToken ? tokens.find((t: any) => t.tokenAddress === fromToken)?.symbol || tokens.find((t: any) => t.tokenAddress === fromToken)?.name || 'Unknown' : 'Select'}
                     </span>
                     <ChevronDown size={16} />
                   </button>
@@ -344,7 +344,7 @@ export default function Trade() {
                     onClick={() => setShowTokenList('to')}
                   >
                     <span className="mr-1 text-white truncate max-w-16">
-                      {toToken ? tokens.find((t: any) => t.tokenAddress === toToken)?.symbol || 'Unknown' : 'Select'}
+                      {toToken ? tokens.find((t: any) => t.tokenAddress === toToken)?.symbol || tokens.find((t: any) => t.tokenAddress === toToken)?.name || 'Unknown' : 'Select'}
                     </span>
                     <ChevronDown size={16} />
                   </button>

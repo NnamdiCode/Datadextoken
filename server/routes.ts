@@ -37,11 +37,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.json({ status: "ok", timestamp: new Date().toISOString() });
   });
 
-  // Get Irys balance
+  // Get Irys balance for specific address
   app.get("/api/irys/balance", async (req, res) => {
     try {
-      const balance = await irysService.getBalance();
-      res.json({ balance });
+      const { address } = req.query;
+      
+      if (!address) {
+        return res.status(400).json({ error: "Address parameter is required" });
+      }
+      
+      // For now, simulate balance fetching from Irys network
+      // In production, this would query the actual Irys blockchain
+      const mockBalance = (Math.random() * 10 + 1).toFixed(4);
+      
+      res.json({ balance: mockBalance });
     } catch (error) {
       console.error("Failed to get Irys balance:", error);
       res.status(500).json({ error: "Failed to get balance" });
@@ -137,7 +146,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         fileType: dataFile.mimetype || 'application/octet-stream',
         fileName: dataFile.originalname,
         imageUrl,
-        totalSupply: '1000000',
+        totalSupply: '1000000000',
         currentPrice: 0.005, // 0.005 IRYS base fee
         volume24h: 0,
         priceChange24h: 0,

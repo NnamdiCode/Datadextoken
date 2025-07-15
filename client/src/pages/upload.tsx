@@ -182,16 +182,7 @@ export default function UploadPage() {
               {i === 1 ? 'Upload' : i === 2 ? 'Configure' : i === 3 ? 'Payment' : 'Complete'}
             </span>
             
-            {/* Connector line */}
-            {i < 4 && (
-              <div className="absolute top-5 left-10 w-full h-[2px] bg-white/10">
-                <div 
-                  className={`h-full bg-primary transition-all duration-500 ${
-                    step > i ? 'w-full' : 'w-0'
-                  }`}
-                ></div>
-              </div>
-            )}
+
           </div>
         ))}
       </div>
@@ -387,7 +378,7 @@ export default function UploadPage() {
                   <p className="text-sm text-gray-400">Size: {file ? (file.size / 1024 / 1024).toFixed(2) : '0'} MB</p>
                 </div>
                 <div className="text-right">
-                  <p className="text-lg font-medium">0.005 IRYS</p>
+                  <p className="text-lg font-medium">{selectedFee} IRYS</p>
                   <p className="text-xs text-gray-400">Upload Fee</p>
                 </div>
               </div>
@@ -400,7 +391,7 @@ export default function UploadPage() {
                   <div>
                     <p className="text-sm font-medium text-yellow-300">Payment Required</p>
                     <p className="text-xs text-gray-300 mt-1">
-                      You need to pay 0.005 IRYS testnet tokens to upload and tokenize your data. 
+                      You need to pay {selectedFee} IRYS testnet tokens to upload and tokenize your data. 
                       This fee covers Irys storage costs and creates your tradable data token.
                     </p>
                   </div>

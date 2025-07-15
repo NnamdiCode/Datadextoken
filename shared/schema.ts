@@ -13,7 +13,7 @@ export interface DataToken {
   fileType: string;
   fileName: string;
   imageUrl?: string;
-  totalSupply: string;
+  totalSupply: string; // 1,000,000,000 (1 billion)
   currentPrice: number;
   volume24h: number;
   priceChange24h: number;

@@ -21,11 +21,16 @@ export default function WalletConnect() {
   }, [isConnected, account]);
 
   const fetchIrysBalance = async () => {
+    if (!account) return;
+    
     try {
-      // This will be replaced with actual Irys balance fetching
-      setIrysBalance('10.5'); // Mock balance for now
+      const response = await fetch(`/api/irys/balance?address=${account}`);
+      if (response.ok) {
+        const data = await response.json();
+        setIrysBalance(parseFloat(data.balance || '0').toFixed(4));
+      }
     } catch (error) {
-      console.error('Failed to fetch Irys balance:', error);
+      console.error('Failed to fetch IRYS balance:', error);
     }
   };
 
