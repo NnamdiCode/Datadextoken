@@ -14,7 +14,7 @@ export default function UploadPage() {
   const [step, setStep] = useState(1);
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
-  const [selectedFee, setSelectedFee] = useState('0.05');
+  const [selectedFee, setSelectedFee] = useState('0.0002');
   const [isConfirmationOpen, setIsConfirmationOpen] = useState(false);
   const [tokenResult, setTokenResult] = useState<any>(null);
   const [paymentTxHash, setPaymentTxHash] = useState('');
@@ -121,7 +121,7 @@ export default function UploadPage() {
     setStep(1);
     setName('');
     setDescription('');
-    setSelectedFee('0.05');
+    setSelectedFee('0.0002');
     setTokenResult(null);
     setPaymentTxHash('');
     setUploadCost('');
@@ -149,21 +149,18 @@ export default function UploadPage() {
   };
   
   const feeOptions = [
-    { value: '0.02', label: '0.02 ETH', speed: 'Slow', time: '~30 min' },
-    { value: '0.05', label: '0.05 ETH', speed: 'Standard', time: '~5 min' },
-    { value: '0.1', label: '0.1 ETH', speed: 'Fast', time: '~1 min' }
+    { value: '0.0001', label: '0.0001 IRYS', speed: 'Slow', time: '~30 min' },
+    { value: '0.0002', label: '0.0002 IRYS', speed: 'Standard', time: '~5 min' },
+    { value: '0.0005', label: '0.0005 IRYS', speed: 'Fast', time: '~1 min' }
   ];
 
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-      <div className="flex justify-between items-center mb-10">
-        <div className="text-center">
-          <h1 className="text-3xl font-bold mb-4">Upload & Tokenize Your Data</h1>
-          <p className="text-gray-300 max-w-2xl mx-auto">
-            Convert your data into tradable tokens on the Irys blockchain. Set metadata, pay a small fee, and receive a unique token.
-          </p>
-        </div>
-        <WalletConnect />
+      <div className="text-center mb-10">
+        <h1 className="text-3xl font-bold mb-4">Upload & Tokenize Your Data</h1>
+        <p className="text-gray-300 max-w-2xl mx-auto">
+          Convert your data into tradable tokens on the Irys blockchain. Set metadata, pay a small fee, and receive a unique token.
+        </p>
       </div>
       
       {/* Steps progress */}
@@ -483,7 +480,7 @@ export default function UploadPage() {
                   
                   <div className="flex justify-between items-center">
                     <span className="text-sm text-gray-400">Fee Paid</span>
-                    <span className="text-sm">{selectedFee} ETH</span>
+                    <span className="text-sm">{selectedFee} IRYS</span>
                   </div>
                 </div>
               </GlassCard>

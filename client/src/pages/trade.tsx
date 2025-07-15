@@ -125,10 +125,15 @@ export default function Trade() {
     }
   }, [quoteData]);
 
-  const filteredTokens = tokens.filter((token: any) => 
-    (token.name && token.name.toLowerCase().includes(searchQuery.toLowerCase())) || 
-    (token.symbol && token.symbol.toLowerCase().includes(searchQuery.toLowerCase()))
-  );
+  const filteredTokens = tokens.filter((token: any) => {
+    if (!searchQuery) return true;
+    
+    const query = searchQuery.toLowerCase();
+    const tokenName = token?.name?.toLowerCase() || '';
+    const tokenSymbol = token?.symbol?.toLowerCase() || '';
+    
+    return tokenName.includes(query) || tokenSymbol.includes(query);
+  });
 
   const handleSwapTokens = () => {
     const temp = fromToken;

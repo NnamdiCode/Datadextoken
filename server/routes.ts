@@ -63,7 +63,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         fileSize,
         estimatedCost,
         estimatedCostETH: estimatedCost,
-        message: `Estimated cost for ${(fileSize / 1024 / 1024).toFixed(2)} MB: ${estimatedCost} ETH`
+        message: `Estimated cost for ${(fileSize / 1024 / 1024).toFixed(2)} MB: ${estimatedCost} IRYS`
       });
     } catch (error) {
       console.error("Failed to estimate upload cost:", error);
