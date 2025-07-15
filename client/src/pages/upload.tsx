@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { ArrowRight, Check, Clock, FileText, Info, Upload, BarChart2, AlertCircle } from 'lucide-react';
+import { ArrowRight, Check, Clock, FileText, Info, Upload, BarChart2, AlertCircle, Image, X } from 'lucide-react';
 import GlassCard from '../components/GlassCard';
 import Button from '../components/Button';
 import { useToast } from '../hooks/use-toast';
@@ -10,6 +10,7 @@ import { useWallet } from '../hooks/useWallet';
 
 export default function UploadPage() {
   const [file, setFile] = useState<File | null>(null);
+  const [imageFile, setImageFile] = useState<File | null>(null);
   const [step, setStep] = useState(1);
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
@@ -26,11 +27,14 @@ export default function UploadPage() {
 
   const uploadMutation = useMutation({
     mutationFn: async (formData: FormData) => {
-      // Add payment information to form data
-      formData.append('uploadFee', selectedFee);
+      // Add necessary metadata for Irys blockchain upload
+      formData.append('name', name);
+      formData.append('description', description);
       formData.append('creatorAddress', account || '');
-      if (paymentTxHash) {
-        formData.append('paymentTxHash', paymentTxHash);
+      
+      // Add image file if selected
+      if (imageFile) {
+        formData.append('image', imageFile);
       }
       
       const response = await fetch('/api/upload', {
@@ -50,7 +54,7 @@ export default function UploadPage() {
       setStep(4); // Move to final step
       toast({ 
         title: 'Success!', 
-        description: 'Your data has been uploaded and tokenized for trading' 
+        description: 'Your data has been uploaded to Irys blockchain and tokenized for trading' 
       });
       queryClient.invalidateQueries({ queryKey: ['/api/tokens'] });
     },
@@ -63,7 +67,7 @@ export default function UploadPage() {
     },
   });
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const selectedFile = e.target.files[0];
       
@@ -78,11 +82,42 @@ export default function UploadPage() {
       }
       
       setFile(selectedFile);
+      setName(selectedFile.name.split('.')[0]); // Auto-fill name from filename
+      setStep(2);
+    }
+  };
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const selectedImage = e.target.files[0];
+      
+      // Check if it's an image
+      if (!selectedImage.type.startsWith('image/')) {
+        toast({ 
+          title: 'Invalid file type', 
+          description: 'Please select an image file',
+          variant: 'destructive'
+        });
+        return;
+      }
+      
+      // Check image size (10MB limit)
+      if (selectedImage.size > 10 * 1024 * 1024) {
+        toast({ 
+          title: 'Image too large', 
+          description: 'Maximum image size is 10MB',
+          variant: 'destructive'
+        });
+        return;
+      }
+      
+      setImageFile(selectedImage);
     }
   };
   
   const resetForm = () => {
     setFile(null);
+    setImageFile(null);
     setStep(1);
     setName('');
     setDescription('');
@@ -103,6 +138,9 @@ export default function UploadPage() {
 
     const formData = new FormData();
     formData.append('file', file);
+    if (imageFile) {
+      formData.append('image', imageFile);
+    }
     formData.append('name', name);
     formData.append('description', description);
     formData.append('creatorAddress', account);

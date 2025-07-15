@@ -49,9 +49,10 @@ export default function Trade() {
 
   // Fetch available tokens
   const { data: tokensData, isLoading: tokensLoading } = useQuery({
-    queryKey: ['/api/tokens'],
+    queryKey: ['/api/tokens', searchQuery],
     queryFn: async () => {
-      const response = await fetch('/api/tokens?limit=50');
+      const url = searchQuery ? `/api/search?q=${encodeURIComponent(searchQuery)}` : '/api/tokens?limit=50';
+      const response = await fetch(url);
       if (!response.ok) throw new Error('Failed to fetch tokens');
       return response.json();
     },
@@ -174,19 +175,28 @@ export default function Trade() {
       : 'text-gray-300 hover:bg-white/5 hover:text-white'
     }`;
 
-  // Generate chart data
+  // Generate chart data based on token prices
   const chartLabels = ['1D', '2D', '3D', '4D', '5D', '6D', '7D'];
-  const generateRandomData = () => {
-    const baseValue = Math.random() * 10 + 20;
-    return chartLabels.map((_, i) => baseValue + Math.random() * 5 - 2.5 + i * 0.5);
+  const generateTokenPriceData = () => {
+    if (tokens.length === 0) return [0.001, 0.0012, 0.0008, 0.0015, 0.0018, 0.0016, 0.0022];
+    
+    const selectedToken = tokens.find((t: any) => t.tokenAddress === fromToken) || tokens[0];
+    const basePrice = selectedToken?.currentPrice || 0.001;
+    
+    return chartLabels.map((_, i) => {
+      const volatility = 0.2; // 20% volatility
+      const trend = i * 0.0001; // Small upward trend
+      const randomChange = (Math.random() - 0.5) * volatility;
+      return Math.max(0.0001, basePrice + trend + (basePrice * randomChange));
+    });
   };
   
   const chartData = {
     labels: chartLabels,
     datasets: [
       {
-        label: 'Price',
-        data: generateRandomData(),
+        label: 'Price (IRYS)',
+        data: generateTokenPriceData(),
         borderColor: 'hsl(217, 91%, 60%)',
         backgroundColor: 'hsla(217, 91%, 60%, 0.1)',
         borderWidth: 2,

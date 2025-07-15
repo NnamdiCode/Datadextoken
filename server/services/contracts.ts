@@ -34,7 +34,8 @@ const DATA_AMM_ABI = [
 export interface ContractAddresses {
   dataRegistry: string;
   dataAMM: string;
-  irysToken: string; // Mock IRYS token for testing
+  network: string;
+  explorerUrl: string;
 }
 
 export class ContractService {
@@ -47,7 +48,7 @@ export class ContractService {
   } = {};
 
   constructor() {
-    const rpcUrl = process.env.RPC_URL || "https://sepolia.infura.io/v3/your-key";
+    const rpcUrl = "https://testnet-rpc.irys.xyz/v1/execution-rpc";
     const privateKey = process.env.CONTRACT_PRIVATE_KEY || process.env.PRIVATE_KEY;
     
     this.provider = new ethers.JsonRpcProvider(rpcUrl);
@@ -63,7 +64,8 @@ export class ContractService {
     this.addresses = {
       dataRegistry: process.env.DATA_REGISTRY_ADDRESS || "",
       dataAMM: process.env.DATA_AMM_ADDRESS || "",
-      irysToken: process.env.IRYS_TOKEN_ADDRESS || "",
+      network: "irys-testnet",
+      explorerUrl: "https://testnet-explorer.irys.xyz",
     };
   }
 

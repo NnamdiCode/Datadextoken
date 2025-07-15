@@ -1,112 +1,174 @@
-import { pgTable, text, serial, integer, boolean, timestamp, real } from "drizzle-orm/pg-core";
-import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
-export const dataTokens = pgTable("data_tokens", {
-  id: serial("id").primaryKey(),
-  tokenAddress: text("token_address").notNull(),
-  irysTransactionId: text("irys_transaction_id").notNull().unique(),
-  name: text("name").notNull(),
-  symbol: text("symbol").notNull().default("DATA"),
-  description: text("description"),
-  creatorAddress: text("creator_address").notNull(),
-  fileSize: integer("file_size").notNull(),
-  fileType: text("file_type").notNull(),
-  fileName: text("file_name").notNull(),
-  totalSupply: text("total_supply").notNull().default("1000000"),
-  currentPrice: real("current_price").default(0.0),
-  volume24h: real("volume_24h").default(0.0),
-  priceChange24h: real("price_change_24h").default(0.0),
-  createdAt: timestamp("created_at").defaultNow(),
+// Data Token interface for blockchain integration
+export interface DataToken {
+  id: number;
+  tokenAddress: string;
+  irysTransactionId: string;
+  name: string;
+  symbol: string;
+  description?: string;
+  creatorAddress: string;
+  fileSize: number;
+  fileType: string;
+  fileName: string;
+  imageUrl?: string;
+  totalSupply: string;
+  currentPrice: number;
+  volume24h: number;
+  priceChange24h: number;
+  createdAt: Date;
+}
+
+export interface Trade {
+  id: number;
+  fromTokenAddress: string;
+  toTokenAddress: string;
+  amountIn: string;
+  amountOut: string;
+  traderAddress: string;
+  transactionHash: string;
+  pricePerToken: number;
+  feeAmount: string;
+  executedAt: Date;
+}
+
+export interface LiquidityPool {
+  id: number;
+  tokenAAddress: string;
+  tokenBAddress: string;
+  reserveA: string;
+  reserveB: string;
+  totalLiquidity: string;
+  createdAt: Date;
+}
+
+export interface User {
+  id: number;
+  walletAddress: string;
+  username?: string;
+  totalUploads: number;
+  totalTrades: number;
+  totalVolume: number;
+  joinedAt: Date;
+}
+
+// Insert schemas using Zod
+export const insertDataTokenSchema = z.object({
+  tokenAddress: z.string(),
+  irysTransactionId: z.string(),
+  name: z.string(),
+  symbol: z.string().default("DATA"),
+  description: z.string().optional(),
+  creatorAddress: z.string(),
+  fileSize: z.number(),
+  fileType: z.string(),
+  fileName: z.string(),
+  imageUrl: z.string().optional(),
+  totalSupply: z.string().default("1000000"),
+  currentPrice: z.number().default(0),
+  volume24h: z.number().default(0),
+  priceChange24h: z.number().default(0),
 });
 
-export const trades = pgTable("trades", {
-  id: serial("id").primaryKey(),
-  fromTokenAddress: text("from_token_address").notNull(),
-  toTokenAddress: text("to_token_address").notNull(),
-  amountIn: text("amount_in").notNull(),
-  amountOut: text("amount_out").notNull(),
-  traderAddress: text("trader_address").notNull(),
-  transactionHash: text("transaction_hash").notNull().unique(),
-  pricePerToken: real("price_per_token").notNull(),
-  feeAmount: text("fee_amount").notNull(),
-  executedAt: timestamp("executed_at").defaultNow(),
+export const insertTradeSchema = z.object({
+  fromTokenAddress: z.string(),
+  toTokenAddress: z.string(),
+  amountIn: z.string(),
+  amountOut: z.string(),
+  traderAddress: z.string(),
+  transactionHash: z.string(),
+  pricePerToken: z.number(),
+  feeAmount: z.string(),
 });
 
-export const liquidityPools = pgTable("liquidity_pools", {
-  id: serial("id").primaryKey(),
-  tokenAAddress: text("token_a_address").notNull(),
-  tokenBAddress: text("token_b_address").notNull(),
-  reserveA: text("reserve_a").notNull().default("0"),
-  reserveB: text("reserve_b").notNull().default("0"),
-  totalLiquidity: text("total_liquidity").notNull().default("0"),
-  createdAt: timestamp("created_at").defaultNow(),
+export const insertLiquidityPoolSchema = z.object({
+  tokenAAddress: z.string(),
+  tokenBAddress: z.string(),
+  reserveA: z.string().default("0"),
+  reserveB: z.string().default("0"),
+  totalLiquidity: z.string().default("0"),
 });
 
-export const users = pgTable("users", {
-  id: serial("id").primaryKey(),
-  walletAddress: text("wallet_address").notNull().unique(),
-  username: text("username"),
-  totalUploads: integer("total_uploads").default(0),
-  totalTrades: integer("total_trades").default(0),
-  totalVolume: real("total_volume").default(0.0),
-  joinedAt: timestamp("joined_at").defaultNow(),
+export const insertUserSchema = z.object({
+  walletAddress: z.string(),
+  username: z.string().optional(),
+  totalUploads: z.number().default(0),
+  totalTrades: z.number().default(0),
+  totalVolume: z.number().default(0),
 });
 
-// Insert schemas
-export const insertDataTokenSchema = createInsertSchema(dataTokens).omit({
-  id: true,
-  createdAt: true,
-});
-
-export const insertTradeSchema = createInsertSchema(trades).omit({
-  id: true,
-  executedAt: true,
-});
-
-export const insertLiquidityPoolSchema = createInsertSchema(liquidityPools).omit({
-  id: true,
-  createdAt: true,
-});
-
-export const insertUserSchema = createInsertSchema(users).omit({
-  id: true,
-  joinedAt: true,
-});
-
-// Upload request schema
+// API request schemas
 export const uploadRequestSchema = z.object({
-  name: z.string().min(1, "Name is required").max(100, "Name too long"),
-  description: z.string().max(500, "Description too long").optional(),
-  fileType: z.string().min(1, "File type is required"),
-  fileName: z.string().min(1, "File name is required"),
-  fileSize: z.number().min(1, "File size must be positive").max(50 * 1024 * 1024, "File too large (max 50MB)"),
-  uploadFee: z.string().optional(),
-  paymentTxHash: z.string().optional(),
-  creatorAddress: z.string().min(1, "Creator address is required"),
+  name: z.string().min(1, "Name is required"),
+  description: z.string().optional(),
+  file: z.any(), // File upload
+  image: z.any().optional(), // Optional token image
+  initialPrice: z.number().min(0, "Price must be positive").default(0.001),
 });
 
-// Trade request schema
 export const tradeRequestSchema = z.object({
-  fromTokenAddress: z.string().min(1, "From token address required"),
-  toTokenAddress: z.string().min(1, "To token address required"),
-  amountIn: z.string().min(1, "Amount required"),
-  minAmountOut: z.string().min(1, "Minimum amount out required"),
-  slippageTolerance: z.number().min(0).max(50).default(0.5),
+  fromToken: z.string(),
+  toToken: z.string(),
+  amountIn: z.string(),
+  minAmountOut: z.string(),
+  slippageTolerance: z.number().min(0).max(100).default(1),
+});
+
+export const searchRequestSchema = z.object({
+  query: z.string().min(1, "Search query is required"),
+  limit: z.number().min(1).max(100).default(20),
+  offset: z.number().min(0).default(0),
 });
 
 // Type exports
 export type InsertDataToken = z.infer<typeof insertDataTokenSchema>;
-export type DataToken = typeof dataTokens.$inferSelect;
-
 export type InsertTrade = z.infer<typeof insertTradeSchema>;
-export type Trade = typeof trades.$inferSelect;
-
 export type InsertLiquidityPool = z.infer<typeof insertLiquidityPoolSchema>;
-export type LiquidityPool = typeof liquidityPools.$inferSelect;
-
 export type InsertUser = z.infer<typeof insertUserSchema>;
-export type User = typeof users.$inferSelect;
-
 export type UploadRequest = z.infer<typeof uploadRequestSchema>;
 export type TradeRequest = z.infer<typeof tradeRequestSchema>;
+export type SearchRequest = z.infer<typeof searchRequestSchema>;
+
+// Blockchain contract interfaces
+export interface ContractAddresses {
+  dataRegistry: string;
+  dataAMM: string;
+  network: string;
+  explorerUrl: string;
+}
+
+export interface TokenContractInfo {
+  tokenAddress: string;
+  name: string;
+  symbol: string;
+  dataHash: string;
+  irysTransactionId: string;
+  imageUrl: string;
+  description: string;
+  creator: string;
+  createdAt: number;
+  price: number;
+}
+
+export interface IrysUploadResponse {
+  id: string;
+  timestamp: number;
+  version: string;
+  public: string;
+  signature: string;
+  deadlineHeight: number;
+  block: number;
+  receipt?: {
+    deadlineHeight: number;
+    block: number;
+    validatorSignatures: string[];
+  };
+}
+
+export interface WalletInfo {
+  address: string;
+  irysBalance: string;
+  dataTokens: TokenContractInfo[];
+  isConnected: boolean;
+}

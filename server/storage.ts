@@ -1,4 +1,4 @@
-import { dataTokens, trades, liquidityPools, users, type DataToken, type InsertDataToken, type Trade, type InsertTrade, type LiquidityPool, type InsertLiquidityPool, type User, type InsertUser } from "@shared/schema";
+import { type DataToken, type InsertDataToken, type Trade, type InsertTrade, type LiquidityPool, type InsertLiquidityPool, type User, type InsertUser } from "@shared/schema";
 
 export interface IStorage {
   // Data Tokens
@@ -59,7 +59,7 @@ export class MemStorage implements IStorage {
 
   async getAllDataTokens(limit = 100, offset = 0): Promise<DataToken[]> {
     const tokens = Array.from(this.dataTokens.values())
-      .sort((a, b) => new Date(b.createdAt!).getTime() - new Date(a.createdAt!).getTime())
+      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
       .slice(offset, offset + limit);
     return tokens;
   }
@@ -75,13 +75,12 @@ export class MemStorage implements IStorage {
   }
 
   async createDataToken(insertToken: InsertDataToken): Promise<DataToken> {
-    const id = this.currentId++;
     const token: DataToken = {
+      id: this.currentId++,
       ...insertToken,
-      id,
       createdAt: new Date(),
     };
-    this.dataTokens.set(id, token);
+    this.dataTokens.set(token.id, token);
     return token;
   }
 
@@ -103,31 +102,30 @@ export class MemStorage implements IStorage {
   async getTradesByUser(userAddress: string, limit = 50): Promise<Trade[]> {
     return Array.from(this.trades.values())
       .filter(trade => trade.traderAddress === userAddress)
-      .sort((a, b) => new Date(b.executedAt!).getTime() - new Date(a.executedAt!).getTime())
+      .sort((a, b) => new Date(b.executedAt).getTime() - new Date(a.executedAt).getTime())
       .slice(0, limit);
   }
 
   async getTradesByToken(tokenAddress: string, limit = 50): Promise<Trade[]> {
     return Array.from(this.trades.values())
       .filter(trade => trade.fromTokenAddress === tokenAddress || trade.toTokenAddress === tokenAddress)
-      .sort((a, b) => new Date(b.executedAt!).getTime() - new Date(a.executedAt!).getTime())
+      .sort((a, b) => new Date(b.executedAt).getTime() - new Date(a.executedAt).getTime())
       .slice(0, limit);
   }
 
   async createTrade(insertTrade: InsertTrade): Promise<Trade> {
-    const id = this.currentId++;
     const trade: Trade = {
+      id: this.currentId++,
       ...insertTrade,
-      id,
       executedAt: new Date(),
     };
-    this.trades.set(id, trade);
+    this.trades.set(trade.id, trade);
     return trade;
   }
 
   async getRecentTrades(limit = 20): Promise<Trade[]> {
     return Array.from(this.trades.values())
-      .sort((a, b) => new Date(b.executedAt!).getTime() - new Date(a.executedAt!).getTime())
+      .sort((a, b) => new Date(b.executedAt).getTime() - new Date(a.executedAt).getTime())
       .slice(0, limit);
   }
 
@@ -138,14 +136,14 @@ export class MemStorage implements IStorage {
   }
 
   async getAllLiquidityPools(): Promise<LiquidityPool[]> {
-    return Array.from(this.liquidityPools.values());
+    return Array.from(this.liquidityPools.values())
+      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
   }
 
   async createLiquidityPool(insertPool: InsertLiquidityPool): Promise<LiquidityPool> {
-    const id = this.currentId++;
     const pool: LiquidityPool = {
+      id: this.currentId++,
       ...insertPool,
-      id,
       createdAt: new Date(),
     };
     const key = this.getPoolKey(pool.tokenAAddress, pool.tokenBAddress);
@@ -164,20 +162,18 @@ export class MemStorage implements IStorage {
   }
 
   private getPoolKey(tokenA: string, tokenB: string): string {
-    return [tokenA, tokenB].sort().join("-");
+    return [tokenA, tokenB].sort().join('-');
   }
 
   // Users
   async getUser(walletAddress: string): Promise<User | undefined> {
-    return this.users.get(walletAddress.toLowerCase());
+    return this.users.get(walletAddress);
   }
 
   async createUser(insertUser: InsertUser): Promise<User> {
-    const id = this.currentId++;
     const user: User = {
+      id: this.currentId++,
       ...insertUser,
-      id,
-      walletAddress: insertUser.walletAddress.toLowerCase(),
       joinedAt: new Date(),
     };
     this.users.set(user.walletAddress, user);
@@ -185,151 +181,15 @@ export class MemStorage implements IStorage {
   }
 
   async updateUserStats(walletAddress: string, totalUploads?: number, totalTrades?: number, totalVolume?: number): Promise<void> {
-    const user = this.users.get(walletAddress.toLowerCase());
+    const user = this.users.get(walletAddress);
     if (user) {
       if (totalUploads !== undefined) user.totalUploads = totalUploads;
       if (totalTrades !== undefined) user.totalTrades = totalTrades;
       if (totalVolume !== undefined) user.totalVolume = totalVolume;
-      this.users.set(user.walletAddress, user);
+      this.users.set(walletAddress, user);
     }
   }
 }
 
-import { users, dataTokens, trades, liquidityPools, type User, type DataToken, type Trade, type LiquidityPool, type InsertUser, type InsertDataToken, type InsertTrade, type InsertLiquidityPool } from "@shared/schema";
-import { db } from "./db";
-import { eq, desc, asc, like, and } from "drizzle-orm";
-
-export class DatabaseStorage implements IStorage {
-  // Data Tokens
-  async getDataToken(id: number): Promise<DataToken | undefined> {
-    const [token] = await db.select().from(dataTokens).where(eq(dataTokens.id, id));
-    return token || undefined;
-  }
-
-  async getDataTokenByAddress(address: string): Promise<DataToken | undefined> {
-    const [token] = await db.select().from(dataTokens).where(eq(dataTokens.tokenAddress, address));
-    return token || undefined;
-  }
-
-  async getDataTokenByIrysId(irysId: string): Promise<DataToken | undefined> {
-    const [token] = await db.select().from(dataTokens).where(eq(dataTokens.irysTransactionId, irysId));
-    return token || undefined;
-  }
-
-  async getAllDataTokens(limit = 100, offset = 0): Promise<DataToken[]> {
-    return await db.select().from(dataTokens).orderBy(desc(dataTokens.id)).limit(limit).offset(offset);
-  }
-
-  async searchDataTokens(query: string): Promise<DataToken[]> {
-    return await db.select().from(dataTokens).where(
-      like(dataTokens.name, `%${query}%`)
-    ).orderBy(desc(dataTokens.id));
-  }
-
-  async createDataToken(token: InsertDataToken): Promise<DataToken> {
-    const [newToken] = await db.insert(dataTokens).values(token).returning();
-    return newToken;
-  }
-
-  async updateDataTokenPrice(address: string, price: number, volume24h = 0, priceChange24h = 0): Promise<void> {
-    await db.update(dataTokens)
-      .set({ 
-        currentPrice: price, 
-        volume24h, 
-        priceChange24h,
-        updatedAt: new Date()
-      })
-      .where(eq(dataTokens.tokenAddress, address));
-  }
-
-  // Trades
-  async getTrade(id: number): Promise<Trade | undefined> {
-    const [trade] = await db.select().from(trades).where(eq(trades.id, id));
-    return trade || undefined;
-  }
-
-  async getTradesByUser(userAddress: string, limit = 50): Promise<Trade[]> {
-    return await db.select().from(trades)
-      .where(eq(trades.userAddress, userAddress))
-      .orderBy(desc(trades.id))
-      .limit(limit);
-  }
-
-  async getTradesByToken(tokenAddress: string, limit = 50): Promise<Trade[]> {
-    return await db.select().from(trades)
-      .where(eq(trades.tokenAddress, tokenAddress))
-      .orderBy(desc(trades.id))
-      .limit(limit);
-  }
-
-  async createTrade(trade: InsertTrade): Promise<Trade> {
-    const [newTrade] = await db.insert(trades).values(trade).returning();
-    return newTrade;
-  }
-
-  async getRecentTrades(limit = 20): Promise<Trade[]> {
-    return await db.select().from(trades)
-      .orderBy(desc(trades.id))
-      .limit(limit);
-  }
-
-  // Liquidity Pools
-  async getLiquidityPool(tokenA: string, tokenB: string): Promise<LiquidityPool | undefined> {
-    const [pool] = await db.select().from(liquidityPools)
-      .where(
-        and(
-          eq(liquidityPools.tokenA, tokenA),
-          eq(liquidityPools.tokenB, tokenB)
-        )
-      );
-    return pool || undefined;
-  }
-
-  async getAllLiquidityPools(): Promise<LiquidityPool[]> {
-    return await db.select().from(liquidityPools).orderBy(desc(liquidityPools.id));
-  }
-
-  async createLiquidityPool(pool: InsertLiquidityPool): Promise<LiquidityPool> {
-    const [newPool] = await db.insert(liquidityPools).values(pool).returning();
-    return newPool;
-  }
-
-  async updateLiquidityPool(tokenA: string, tokenB: string, reserveA: string, reserveB: string): Promise<void> {
-    await db.update(liquidityPools)
-      .set({ 
-        reserveA, 
-        reserveB,
-        updatedAt: new Date()
-      })
-      .where(
-        and(
-          eq(liquidityPools.tokenA, tokenA),
-          eq(liquidityPools.tokenB, tokenB)
-        )
-      );
-  }
-
-  // Users
-  async getUser(walletAddress: string): Promise<User | undefined> {
-    const [user] = await db.select().from(users).where(eq(users.walletAddress, walletAddress));
-    return user || undefined;
-  }
-
-  async createUser(user: InsertUser): Promise<User> {
-    const [newUser] = await db.insert(users).values(user).returning();
-    return newUser;
-  }
-
-  async updateUserStats(walletAddress: string, totalUploads?: number, totalTrades?: number, totalVolume?: number): Promise<void> {
-    const updateData: any = { updatedAt: new Date() };
-    if (totalUploads !== undefined) updateData.totalUploads = totalUploads;
-    if (totalTrades !== undefined) updateData.totalTrades = totalTrades;
-    if (totalVolume !== undefined) updateData.totalVolume = totalVolume;
-
-    await db.update(users)
-      .set(updateData)
-      .where(eq(users.walletAddress, walletAddress));
-  }
-}
-
-export const storage = new DatabaseStorage();
+// Use only in-memory storage for blockchain integration
+export const storage = new MemStorage();

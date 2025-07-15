@@ -25,6 +25,12 @@ const upload = multer({
   },
 });
 
+// Configure multer for multiple file uploads (data + image)
+const multiUpload = upload.fields([
+  { name: 'file', maxCount: 1 },
+  { name: 'image', maxCount: 1 }
+]);
+
 export async function registerRoutes(app: Express): Promise<Server> {
   // Health check
   app.get("/api/health", (req, res) => {
@@ -66,130 +72,107 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Upload file and create data token
-  app.post("/api/upload", upload.single("file"), async (req, res) => {
+  app.post("/api/upload", multiUpload, async (req, res) => {
     try {
-      if (!req.file) {
-        return res.status(400).json({ error: "No file uploaded" });
+      const files = req.files as { [fieldname: string]: Express.Multer.File[] };
+      
+      if (!files || !files.file || !files.file[0]) {
+        return res.status(400).json({ error: "No data file uploaded" });
       }
 
-      // Validate request data
-      const validation = uploadRequestSchema.safeParse({
-        name: req.body.name,
-        description: req.body.description,
-        fileType: req.file.mimetype,
-        fileName: req.file.originalname,
-        fileSize: req.file.size,
-        uploadFee: req.body.uploadFee,
-        paymentTxHash: req.body.paymentTxHash,
-        creatorAddress: req.body.creatorAddress,
-      });
-
-      if (!validation.success) {
-        // Clean up uploaded file
-        fs.unlinkSync(req.file.path);
-        return res.status(400).json({ 
-          error: "Validation failed", 
-          details: validation.error.issues 
-        });
+      const dataFile = files.file[0];
+      const imageFile = files.image ? files.image[0] : null;
+      const { name, description, creatorAddress } = req.body;
+      
+      if (!name || !creatorAddress) {
+        return res.status(400).json({ error: "Name and creator address are required" });
       }
 
-      const { name, description, uploadFee, paymentTxHash, creatorAddress } = validation.data;
-
-      // Check if payment is required and provided
-      const requiredFee = parseFloat(uploadFee || "0.01");
-      if (requiredFee > 0 && !paymentTxHash) {
-        fs.unlinkSync(req.file.path);
-        return res.status(400).json({ 
-          error: "Payment required", 
-          message: `Please pay ${requiredFee} testnet tokens to upload this file`,
-          requiredFee: requiredFee.toString()
-        });
+      console.log(`📤 Processing upload: ${name} by ${creatorAddress}`);
+      
+      let imageUrl = '';
+      
+      // Upload token image to Irys if provided
+      if (imageFile) {
+        try {
+          const imageResult = await irysService.uploadFile(imageFile.path, {
+            name: `${name}-image`,
+            description: `Token image for ${name}`,
+            creatorAddress,
+            fileType: imageFile.mimetype || 'image/png',
+            applicationId: 'DataSwap'
+          });
+          
+          imageUrl = `https://gateway.irys.xyz/${imageResult.id}`;
+          console.log(`🖼️  Token image uploaded: ${imageResult.id}`);
+          
+          // Clean up image file
+          fs.unlinkSync(imageFile.path);
+        } catch (imageError) {
+          console.error("Image upload failed:", imageError);
+          // Continue with data upload even if image fails
+        }
       }
-
-      // Calculate upload cost for transparency
-      const estimatedCost = await irysService.getUploadCost(req.file.size);
-      console.log(`📊 Upload cost: ${estimatedCost} ETH for ${req.file.size} bytes (paid: ${uploadFee || "0"} testnet tokens)`);
-
-      // Upload to Irys
-      const irysResult = await irysService.uploadFile(req.file.path, {
+      
+      // Upload data file to Irys blockchain
+      const irysResult = await irysService.uploadFile(dataFile.path, {
         name,
-        description,
+        description: description || '',
         creatorAddress,
-        fileType: req.file.mimetype,
+        fileType: dataFile.mimetype || 'application/octet-stream',
+        applicationId: 'DataSwap'
       });
 
-      // Create smart contract token
-      const symbol = `DATA${Date.now().toString().slice(-6)}`; // Unique symbol
-      const contractResult = await contractService.createDataToken(
-        name,
-        irysResult.id,
-        JSON.stringify({
-          description,
-          fileName: req.file.originalname,
-          fileSize: req.file.size,
-          fileType: req.file.mimetype,
-          uploadedAt: new Date().toISOString(),
-          uploadCost: estimatedCost,
-          paymentTxHash: paymentTxHash || "mock-payment",
-          symbol: symbol
-        })
-      );
+      console.log(`✅ Irys upload complete: ${irysResult.id}`);
 
-      // Store in database with trading parameters
-      const dataToken = await storage.createDataToken({
-        tokenAddress: contractResult.tokenAddress,
+      // Create data token with Irys transaction ID
+      const tokenData = {
+        tokenAddress: `0x${irysResult.id.slice(0, 40)}`, // Generate token address from Irys ID
         irysTransactionId: irysResult.id,
         name,
-        symbol: symbol,
-        description: description || "",
+        symbol: 'DATA',
+        description: description || '',
         creatorAddress,
-        fileSize: req.file.size,
-        fileType: req.file.mimetype,
-        fileName: req.file.originalname,
-        currentPrice: requiredFee, // Use upload fee as initial trading price
-        totalSupply: "1000000", // 1M tokens available for trading
+        fileSize: dataFile.size,
+        fileType: dataFile.mimetype || 'application/octet-stream',
+        fileName: dataFile.originalname,
+        imageUrl,
+        totalSupply: '1000000',
+        currentPrice: 0.001, // 0.001 IRYS initial price
         volume24h: 0,
-        priceChange24h: 0
-      });
+        priceChange24h: 0,
+      };
 
-      // Update user stats
-      const existingUser = await storage.getUser(creatorAddress);
-      if (existingUser) {
-        await storage.updateUserStats(
-          creatorAddress,
-          (existingUser.totalUploads || 0) + 1,
-          undefined,
-          (existingUser.totalVolume || 0) + requiredFee
-        );
-      } else {
-        await storage.createUser({
-          walletAddress: creatorAddress,
-          totalUploads: 1,
-          totalTrades: 0,
-          totalVolume: requiredFee
-        });
-      }
-
-      // Clean up uploaded file
-      fs.unlinkSync(req.file.path);
+      // Save token to storage
+      const savedToken = await storage.createDataToken(tokenData);
+      
+      // Clean up uploaded data file
+      fs.unlinkSync(dataFile.path);
 
       res.json({
         success: true,
-        token: dataToken,
-        irysUrl: irysService.getGatewayUrl(irysResult.id),
-        contractTransaction: contractResult.transactionHash,
+        token: savedToken,
+        irysTransaction: irysResult,
+        imageUrl,
+        message: `Data successfully uploaded to Irys blockchain and tokenized`
       });
+
     } catch (error) {
-      console.error("Upload failed:", error);
+      console.error("Upload error:", error);
       
-      // Clean up uploaded file on error
-      if (req.file && fs.existsSync(req.file.path)) {
-        fs.unlinkSync(req.file.path);
+      // Clean up files on error
+      const files = req.files as { [fieldname: string]: Express.Multer.File[] };
+      if (files) {
+        Object.values(files).flat().forEach(file => {
+          if (fs.existsSync(file.path)) {
+            fs.unlinkSync(file.path);
+          }
+        });
       }
       
       res.status(500).json({ 
-        error: "Upload failed", 
-        message: error instanceof Error ? error.message : "Unknown error" 
+        error: "Upload failed",
+        details: error instanceof Error ? error.message : "Unknown error"
       });
     }
   });
@@ -225,113 +208,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ error: "Token not found" });
       }
 
-      // Get additional contract info
-      const contractInfo = await contractService.getTokenInfo(address);
-      
-      res.json({ 
-        token,
-        contractInfo,
-        irysUrl: irysService.getGatewayUrl(token.irysTransactionId),
-      });
+      res.json({ token });
     } catch (error) {
       console.error("Failed to get token:", error);
-      res.status(500).json({ error: "Failed to get token details" });
-    }
-  });
-
-  // Get swap quote
-  app.get("/api/trade/quote", async (req, res) => {
-    try {
-      const { tokenIn, tokenOut, amountIn } = req.query;
-      
-      if (!tokenIn || !tokenOut || !amountIn) {
-        return res.status(400).json({ error: "Missing required parameters" });
-      }
-
-      const quote = await contractService.getSwapQuote(
-        tokenIn as string,
-        tokenOut as string,
-        amountIn as string
-      );
-
-      res.json(quote);
-    } catch (error) {
-      console.error("Failed to get quote:", error);
-      res.status(500).json({ error: "Failed to get swap quote" });
-    }
-  });
-
-  // Execute trade
-  app.post("/api/trade", async (req, res) => {
-    try {
-      const validation = tradeRequestSchema.safeParse(req.body);
-      
-      if (!validation.success) {
-        return res.status(400).json({ 
-          error: "Validation failed", 
-          details: validation.error.issues 
-        });
-      }
-
-      const { fromTokenAddress, toTokenAddress, amountIn, minAmountOut } = validation.data;
-      const traderAddress = req.body.traderAddress;
-
-      if (!traderAddress) {
-        return res.status(400).json({ error: "Trader address is required" });
-      }
-
-      // Execute the swap
-      const swapResult = await contractService.swapTokens(
-        fromTokenAddress,
-        toTokenAddress,
-        amountIn,
-        minAmountOut
-      );
-
-      // Calculate price and fee (simplified)
-      const pricePerToken = parseFloat(swapResult.amountOut) / parseFloat(amountIn);
-      const feeAmount = (parseFloat(amountIn) * 0.003).toString(); // 0.3% fee
-
-      // Store trade in database
-      const trade = await storage.createTrade({
-        fromTokenAddress,
-        toTokenAddress,
-        amountIn,
-        amountOut: swapResult.amountOut,
-        traderAddress,
-        transactionHash: swapResult.transactionHash,
-        pricePerToken,
-        feeAmount,
-      });
-
-      // Update user stats
-      const user = await storage.getUser(traderAddress);
-      if (user) {
-        await storage.updateUserStats(
-          traderAddress,
-          undefined,
-          (user.totalTrades || 0) + 1,
-          (user.totalVolume || 0) + parseFloat(amountIn)
-        );
-      } else {
-        await storage.createUser({
-          walletAddress: traderAddress,
-          totalTrades: 1,
-          totalVolume: parseFloat(amountIn),
-        });
-      }
-
-      res.json({
-        success: true,
-        trade,
-        transactionHash: swapResult.transactionHash,
-      });
-    } catch (error) {
-      console.error("Trade failed:", error);
-      res.status(500).json({ 
-        error: "Trade failed", 
-        message: error instanceof Error ? error.message : "Unknown error" 
-      });
+      res.status(500).json({ error: "Failed to get token" });
     }
   });
 
@@ -339,18 +219,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/trades", async (req, res) => {
     try {
       const limit = parseInt(req.query.limit as string) || 20;
-      const userAddress = req.query.user as string;
-      const tokenAddress = req.query.token as string;
-
-      let trades;
-      if (userAddress) {
-        trades = await storage.getTradesByUser(userAddress, limit);
-      } else if (tokenAddress) {
-        trades = await storage.getTradesByToken(tokenAddress, limit);
-      } else {
-        trades = await storage.getRecentTrades(limit);
-      }
-
+      const trades = await storage.getRecentTrades(limit);
+      
       res.json({ trades });
     } catch (error) {
       console.error("Failed to get trades:", error);
@@ -358,68 +228,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Get user profile
-  app.get("/api/users/:address", async (req, res) => {
+  // Search tokens
+  app.get("/api/search", async (req, res) => {
     try {
-      const { address } = req.params;
-      const user = await storage.getUser(address);
+      const { q } = req.query;
       
-      if (!user) {
-        return res.status(404).json({ error: "User not found" });
+      if (!q || typeof q !== 'string') {
+        return res.status(400).json({ error: "Search query is required" });
       }
 
-      res.json({ user });
+      const tokens = await storage.searchDataTokens(q);
+      res.json({ tokens });
     } catch (error) {
-      console.error("Failed to get user:", error);
-      res.status(500).json({ error: "Failed to get user" });
-    }
-  });
-
-  // Download data from Irys
-  app.get("/api/data/:irysId", async (req, res) => {
-    try {
-      const { irysId } = req.params;
-      
-      // Verify user owns this data or it's publicly accessible
-      const token = await storage.getDataTokenByIrysId(irysId);
-      if (!token) {
-        return res.status(404).json({ error: "Data not found" });
-      }
-
-      // Proxy the download from Irys
-      const response = await irysService.downloadData(irysId);
-      
-      // Set appropriate headers
-      res.setHeader("Content-Type", token.fileType);
-      res.setHeader("Content-Disposition", `attachment; filename="${token.fileName}"`);
-      
-      // Stream the response
-      const reader = response.body?.getReader();
-      if (reader) {
-        const pump = async () => {
-          const { done, value } = await reader.read();
-          if (done) return;
-          res.write(value);
-          return pump();
-        };
-        await pump();
-      }
-      
-      res.end();
-    } catch (error) {
-      console.error("Failed to download data:", error);
-      res.status(500).json({ error: "Failed to download data" });
-    }
-  });
-
-  // Get liquidity pools
-  app.get("/api/pools", async (req, res) => {
-    try {
-      const pools = await storage.getAllLiquidityPools();
-      res.json({ pools });
-    } catch (error) {
-      console.error("Failed to get pools:", error);
-      res.status(500).json({ error: "Failed to get liquidity pools" });
+      console.error("Search failed:", error);
+      res.status(500).json({ error: "Search failed" });
     }
   });
 

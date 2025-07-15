@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { Wallet, ChevronDown, LogOut, Copy, ExternalLink } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Wallet, ChevronDown, LogOut, Copy, ExternalLink, Coins, Database } from 'lucide-react';
 import Button from './Button';
 import GlassCard from './GlassCard';
 import { useWallet } from '../hooks/useWallet';
@@ -7,8 +7,36 @@ import { useToast } from '../hooks/use-toast';
 
 export default function WalletConnect() {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const { account, isConnected, isConnecting, connect, disconnect } = useWallet();
+  const [irysBalance, setIrysBalance] = useState<string>('0');
+  const [dataTokens, setDataTokens] = useState<any[]>([]);
+  const { account, isConnected, isConnecting, connect, disconnect, provider } = useWallet();
   const { toast } = useToast();
+
+  // Fetch Irys balance and user data tokens
+  useEffect(() => {
+    if (isConnected && account) {
+      fetchIrysBalance();
+      fetchUserDataTokens();
+    }
+  }, [isConnected, account]);
+
+  const fetchIrysBalance = async () => {
+    try {
+      // This will be replaced with actual Irys balance fetching
+      setIrysBalance('10.5'); // Mock balance for now
+    } catch (error) {
+      console.error('Failed to fetch Irys balance:', error);
+    }
+  };
+
+  const fetchUserDataTokens = async () => {
+    try {
+      // This will be replaced with actual contract call
+      setDataTokens([]); // Mock empty array for now
+    } catch (error) {
+      console.error('Failed to fetch user data tokens:', error);
+    }
+  };
 
   const handleCopyAddress = async () => {
     if (account) {
@@ -61,6 +89,33 @@ export default function WalletConnect() {
                   <p className="font-mono text-sm text-white">{account}</p>
                 </div>
 
+                {/* Irys Balance */}
+                <div className="border-b border-white/10 pb-3">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center">
+                      <Coins size={16} className="text-blue-400 mr-2" />
+                      <span className="text-sm text-gray-400">Irys Balance</span>
+                    </div>
+                    <span className="text-sm font-mono text-white">{irysBalance} IRYS</span>
+                  </div>
+                </div>
+
+                {/* Data Tokens */}
+                <div className="border-b border-white/10 pb-3">
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center">
+                      <Database size={16} className="text-purple-400 mr-2" />
+                      <span className="text-sm text-gray-400">Data Tokens</span>
+                    </div>
+                    <span className="text-sm font-mono text-white">{dataTokens.length}</span>
+                  </div>
+                  {dataTokens.length > 0 && (
+                    <div className="text-xs text-gray-500">
+                      Click to view your created tokens
+                    </div>
+                  )}
+                </div>
+
                 <button
                   onClick={handleCopyAddress}
                   className="w-full flex items-center px-3 py-2 text-sm text-gray-300 hover:text-white hover:bg-white/5 rounded-md transition-colors"
@@ -71,7 +126,7 @@ export default function WalletConnect() {
 
                 <button
                   onClick={() => {
-                    window.open(`https://etherscan.io/address/${account}`, '_blank');
+                    window.open(`https://testnet-explorer.irys.xyz/address/${account}`, '_blank');
                   }}
                   className="w-full flex items-center px-3 py-2 text-sm text-gray-300 hover:text-white hover:bg-white/5 rounded-md transition-colors"
                 >

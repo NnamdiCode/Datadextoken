@@ -31,11 +31,15 @@ export class IrysService {
         return;
       }
 
-      // Initialize Irys with devnet
+      // Initialize Irys with testnet for IrysVM
       this.irys = new Irys({
-        url: "https://devnet.irys.xyz",
+        url: "https://testnet.irys.xyz",
         token: "ethereum",
         key: privateKey,
+        config: {
+          providerUrl: "https://testnet-rpc.irys.xyz/v1/execution-rpc",
+          timeout: 60000
+        }
       });
 
       this.isInitialized = true;

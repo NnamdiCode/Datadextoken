@@ -18,11 +18,11 @@ module.exports = {
       chainId: 31337,
     },
     
-    // Irys Devnet configuration
-    irysDevnet: {
-      url: process.env.IRYS_DEVNET_RPC || "https://devnet.irys.xyz",
+    // Irys Testnet configuration
+    irys: {
+      url: "https://testnet-rpc.irys.xyz/v1/execution-rpc",
       accounts: process.env.PRIVATE_KEY ? [process.env.PRIVATE_KEY] : [],
-      chainId: parseInt(process.env.IRYS_CHAIN_ID || "31337"),
+      chainId: 1270,
       gasPrice: "auto",
       gas: "auto",
     },

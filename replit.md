@@ -22,33 +22,36 @@ Preferred communication style: Simple, everyday language.
 ### Backend Architecture
 - **Runtime**: Node.js with Express server
 - **Language**: TypeScript with ES modules
-- **Database**: PostgreSQL with Drizzle ORM for type-safe database operations
-- **Database Provider**: Replit PostgreSQL (serverless database)
-- **Storage**: DatabaseStorage implementation replacing in-memory storage
-- **File Handling**: Multer for multipart file uploads
+- **Storage**: In-memory storage (MemStorage) for efficient data handling
+- **Blockchain Integration**: Irys blockchain for permanent data storage
+- **File Handling**: Multer for multipart file uploads (data files + token images)
 - **API Design**: RESTful API with structured error handling
 
 ### Blockchain Integration
 - **Primary Blockchain**: Irys network for permanent data storage
+- **Token Management**: 0.0001 IRYS testnet tokens for all operations
 - **Smart Contracts**: Hardhat development environment with Solidity 0.8.19
 - **Contract Types**: 
   - DataRegistry: Manages data token creation and metadata
   - DataAMM: Automated market maker for token trading
   - DataMarketplace: Orchestrates the overall trading ecosystem
 - **Wallet Integration**: MetaMask and other Web3 wallets via ethers.js
-- **Test Networks**: Sepolia and Mumbai for development testing
+- **Test Networks**: Irys testnet (Chain ID: 1270) for development testing
 
 ## Key Components
 
 ### Data Upload & Tokenization
 - Users upload files through a multi-step wizard interface
-- Files are stored permanently on Irys blockchain
-- Each upload generates a unique ERC-20 token representing data ownership
-- Metadata includes file information, creator details, and IPFS/Irys transaction IDs
+- Files are stored permanently on Irys blockchain with metadata tagging
+- Optional token images can be uploaded alongside data files
+- Each upload generates a unique token representing data ownership
+- Metadata includes file information, creator details, and Irys transaction IDs
+- All operations use 0.0001 IRYS testnet tokens
 
 ### Trading System
 - Automated Market Maker (AMM) for token-to-token swaps
-- Real-time price charts and trading analytics
+- Real-time price charts with dynamic token price data
+- Searchable token marketplace with filtering capabilities
 - Liquidity pools for improved trading efficiency
 - Slippage protection and transaction fee estimation
 
@@ -67,9 +70,10 @@ Preferred communication style: Simple, everyday language.
 
 ## Data Flow
 
-1. **Upload Process**: User selects file → File validation → Irys upload → Smart contract token creation → Database record creation
-2. **Trading Process**: User initiates swap → AMM calculates exchange rate → Smart contract execution → Database trade recording
-3. **Price Discovery**: Market activity updates → Real-time price calculation → Chart data updates → UI refresh
+1. **Upload Process**: User selects file + optional image → File validation → Irys upload with metadata → Token creation → In-memory storage
+2. **Trading Process**: User initiates swap → AMM calculates exchange rate → Smart contract execution → Trade recording
+3. **Price Discovery**: Market activity updates → Real-time price calculation → Dynamic chart data → UI refresh
+4. **Search & Discovery**: Real-time token search → Filterable marketplace → Price tracking → Trading analytics
 
 ## External Dependencies
 

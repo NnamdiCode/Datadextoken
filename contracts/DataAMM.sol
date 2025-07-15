@@ -1,425 +1,180 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.19;
 
-import "./DataToken.sol";
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 
-/**
- * @title DataAMM
- * @dev Automated Market Maker for trading data tokens
- * Uses constant product formula (x * y = k) for price discovery
- */
-contract DataAMM {
+contract DataAMM is Ownable, ReentrancyGuard {
     struct Pool {
+        address tokenA;
+        address tokenB;
         uint256 reserveA;
         uint256 reserveB;
         uint256 totalLiquidity;
-        uint256 lastUpdate;
-        mapping(address => uint256) liquidityBalance;
+        mapping(address => uint256) liquidity;
     }
-
-    struct TradeInfo {
+    
+    struct Trade {
         address trader;
         address tokenIn;
         address tokenOut;
         uint256 amountIn;
         uint256 amountOut;
-        uint256 fee;
         uint256 timestamp;
     }
-
-    mapping(address => mapping(address => Pool)) public pools;
-    mapping(bytes32 => bool) public poolExists;
     
-    address[] public allPools;
-    TradeInfo[] public tradeHistory;
+    mapping(bytes32 => Pool) public pools;
+    mapping(address => Trade[]) public userTrades;
+    Trade[] public allTrades;
     
-    uint256 public constant FEE_RATE = 30; // 0.3% (30/10000)
-    uint256 public constant MINIMUM_LIQUIDITY = 1000;
+    event PoolCreated(address indexed tokenA, address indexed tokenB);
+    event LiquidityAdded(address indexed user, address indexed tokenA, address indexed tokenB, uint256 amountA, uint256 amountB);
+    event TokensSwapped(address indexed user, address indexed tokenIn, address indexed tokenOut, uint256 amountIn, uint256 amountOut);
     
-    address public owner;
-    address public feeRecipient;
-    bool public tradingEnabled = true;
+    constructor() Ownable(msg.sender) {}
     
-    event PoolCreated(
-        address indexed tokenA,
-        address indexed tokenB,
-        uint256 amountA,
-        uint256 amountB,
-        uint256 liquidity,
-        address indexed provider
-    );
-    
-    event LiquidityAdded(
-        address indexed provider,
-        address indexed tokenA,
-        address indexed tokenB,
-        uint256 amountA,
-        uint256 amountB,
-        uint256 liquidity
-    );
-    
-    event LiquidityRemoved(
-        address indexed provider,
-        address indexed tokenA,
-        address indexed tokenB,
-        uint256 amountA,
-        uint256 amountB,
-        uint256 liquidity
-    );
-    
-    event Swap(
-        address indexed trader,
-        address indexed tokenIn,
-        address indexed tokenOut,
-        uint256 amountIn,
-        uint256 amountOut,
-        uint256 fee
-    );
-
-    modifier onlyOwner() {
-        require(msg.sender == owner, "DataAMM: caller is not the owner");
-        _;
+    function getPoolKey(address tokenA, address tokenB) internal pure returns (bytes32) {
+        return tokenA < tokenB ? keccak256(abi.encodePacked(tokenA, tokenB)) : keccak256(abi.encodePacked(tokenB, tokenA));
     }
-
-    modifier tradingActive() {
-        require(tradingEnabled, "DataAMM: trading is disabled");
-        _;
+    
+    function createPool(address tokenA, address tokenB) external {
+        require(tokenA != tokenB, "Tokens must be different");
+        require(tokenA != address(0) && tokenB != address(0), "Invalid token addresses");
+        
+        bytes32 poolKey = getPoolKey(tokenA, tokenB);
+        require(pools[poolKey].tokenA == address(0), "Pool already exists");
+        
+        Pool storage pool = pools[poolKey];
+        pool.tokenA = tokenA < tokenB ? tokenA : tokenB;
+        pool.tokenB = tokenA < tokenB ? tokenB : tokenA;
+        
+        emit PoolCreated(pool.tokenA, pool.tokenB);
     }
-
-    constructor() {
-        owner = msg.sender;
-        feeRecipient = msg.sender;
-    }
-
-    /**
-     * @dev Add liquidity to a trading pair
-     */
+    
     function addLiquidity(
         address tokenA,
         address tokenB,
         uint256 amountA,
         uint256 amountB
-    ) external tradingActive returns (uint256 liquidity) {
-        require(tokenA != tokenB, "DataAMM: identical tokens");
-        require(amountA > 0 && amountB > 0, "DataAMM: insufficient amounts");
+    ) external nonReentrant {
+        bytes32 poolKey = getPoolKey(tokenA, tokenB);
+        Pool storage pool = pools[poolKey];
+        require(pool.tokenA != address(0), "Pool does not exist");
         
-        // Sort tokens to ensure consistent ordering
-        (address token0, address token1) = tokenA < tokenB ? (tokenA, tokenB) : (tokenB, tokenA);
-        (uint256 amount0, uint256 amount1) = tokenA < tokenB ? (amountA, amountB) : (amountB, amountA);
+        IERC20(tokenA).transferFrom(msg.sender, address(this), amountA);
+        IERC20(tokenB).transferFrom(msg.sender, address(this), amountB);
         
-        bytes32 poolId = keccak256(abi.encodePacked(token0, token1));
-        Pool storage pool = pools[token0][token1];
-        
-        // Transfer tokens from user
-        DataToken(tokenA).transferFrom(msg.sender, address(this), amountA);
-        DataToken(tokenB).transferFrom(msg.sender, address(this), amountB);
-        
-        if (!poolExists[poolId]) {
-            // First liquidity provider
-            liquidity = sqrt(amount0 * amount1) - MINIMUM_LIQUIDITY;
-            pool.totalLiquidity = liquidity + MINIMUM_LIQUIDITY;
-            
-            poolExists[poolId] = true;
-            allPools.push(token0);
-            
-            emit PoolCreated(tokenA, tokenB, amountA, amountB, liquidity, msg.sender);
+        uint256 liquidityMinted;
+        if (pool.totalLiquidity == 0) {
+            liquidityMinted = sqrt(amountA * amountB);
         } else {
-            // Subsequent liquidity providers
-            liquidity = min(
-                (amount0 * pool.totalLiquidity) / pool.reserveA,
-                (amount1 * pool.totalLiquidity) / pool.reserveB
+            liquidityMinted = min(
+                (amountA * pool.totalLiquidity) / pool.reserveA,
+                (amountB * pool.totalLiquidity) / pool.reserveB
             );
-            require(liquidity > 0, "DataAMM: insufficient liquidity minted");
-            
-            pool.totalLiquidity += liquidity;
         }
         
-        pool.reserveA += amount0;
-        pool.reserveB += amount1;
-        pool.liquidityBalance[msg.sender] += liquidity;
-        pool.lastUpdate = block.timestamp;
+        pool.reserveA += amountA;
+        pool.reserveB += amountB;
+        pool.totalLiquidity += liquidityMinted;
+        pool.liquidity[msg.sender] += liquidityMinted;
         
-        emit LiquidityAdded(msg.sender, tokenA, tokenB, amountA, amountB, liquidity);
-        
-        return liquidity;
+        emit LiquidityAdded(msg.sender, tokenA, tokenB, amountA, amountB);
     }
-
-    /**
-     * @dev Remove liquidity from a trading pair
-     */
-    function removeLiquidity(
-        address tokenA,
-        address tokenB,
-        uint256 liquidity
-    ) external returns (uint256 amountA, uint256 amountB) {
-        require(liquidity > 0, "DataAMM: insufficient liquidity");
-        
-        (address token0, address token1) = tokenA < tokenB ? (tokenA, tokenB) : (tokenB, tokenA);
-        Pool storage pool = pools[token0][token1];
-        
-        require(pool.liquidityBalance[msg.sender] >= liquidity, "DataAMM: insufficient balance");
-        require(pool.totalLiquidity > 0, "DataAMM: no liquidity");
-        
-        // Calculate token amounts to return
-        uint256 amount0 = (liquidity * pool.reserveA) / pool.totalLiquidity;
-        uint256 amount1 = (liquidity * pool.reserveB) / pool.totalLiquidity;
-        
-        require(amount0 > 0 && amount1 > 0, "DataAMM: insufficient liquidity burned");
-        
-        // Update pool state
-        pool.liquidityBalance[msg.sender] -= liquidity;
-        pool.totalLiquidity -= liquidity;
-        pool.reserveA -= amount0;
-        pool.reserveB -= amount1;
-        pool.lastUpdate = block.timestamp;
-        
-        // Determine which amount corresponds to which token
-        (amountA, amountB) = tokenA < tokenB ? (amount0, amount1) : (amount1, amount0);
-        
-        // Transfer tokens back to user
-        DataToken(tokenA).transfer(msg.sender, amountA);
-        DataToken(tokenB).transfer(msg.sender, amountB);
-        
-        emit LiquidityRemoved(msg.sender, tokenA, tokenB, amountA, amountB, liquidity);
-    }
-
-    /**
-     * @dev Execute a token swap
-     */
-    function swap(
+    
+    function swapTokens(
         address tokenIn,
         address tokenOut,
         uint256 amountIn,
         uint256 minAmountOut
-    ) external tradingActive returns (uint256 amountOut) {
-        require(tokenIn != tokenOut, "DataAMM: identical tokens");
-        require(amountIn > 0, "DataAMM: insufficient input amount");
+    ) external nonReentrant {
+        bytes32 poolKey = getPoolKey(tokenIn, tokenOut);
+        Pool storage pool = pools[poolKey];
+        require(pool.tokenA != address(0), "Pool does not exist");
         
-        (address token0, address token1) = tokenIn < tokenOut ? (tokenIn, tokenOut) : (tokenOut, tokenIn);
-        Pool storage pool = pools[token0][token1];
+        uint256 amountOut = getAmountOut(amountIn, tokenIn, tokenOut);
+        require(amountOut >= minAmountOut, "Insufficient output amount");
         
-        require(pool.totalLiquidity > 0, "DataAMM: no liquidity");
-        
-        // Calculate output amount with fee
-        amountOut = getAmountOut(amountIn, tokenIn, tokenOut);
-        require(amountOut >= minAmountOut, "DataAMM: insufficient output amount");
-        require(amountOut > 0, "DataAMM: insufficient output amount");
-        
-        // Calculate fee
-        uint256 fee = (amountIn * FEE_RATE) / 10000;
-        uint256 amountInAfterFee = amountIn - fee;
+        IERC20(tokenIn).transferFrom(msg.sender, address(this), amountIn);
+        IERC20(tokenOut).transfer(msg.sender, amountOut);
         
         // Update reserves
-        if (tokenIn == token0) {
-            require(amountOut <= pool.reserveB, "DataAMM: insufficient liquidity");
-            pool.reserveA += amountInAfterFee;
+        if (tokenIn == pool.tokenA) {
+            pool.reserveA += amountIn;
             pool.reserveB -= amountOut;
         } else {
-            require(amountOut <= pool.reserveA, "DataAMM: insufficient liquidity");
-            pool.reserveB += amountInAfterFee;
+            pool.reserveB += amountIn;
             pool.reserveA -= amountOut;
         }
         
-        pool.lastUpdate = block.timestamp;
-        
-        // Transfer tokens
-        DataToken(tokenIn).transferFrom(msg.sender, address(this), amountIn);
-        DataToken(tokenOut).transfer(msg.sender, amountOut);
-        
-        // Transfer fee to fee recipient
-        if (fee > 0) {
-            DataToken(tokenIn).transfer(feeRecipient, fee);
-        }
-        
         // Record trade
-        tradeHistory.push(TradeInfo({
+        Trade memory trade = Trade({
             trader: msg.sender,
             tokenIn: tokenIn,
             tokenOut: tokenOut,
             amountIn: amountIn,
             amountOut: amountOut,
-            fee: fee,
             timestamp: block.timestamp
-        }));
+        });
         
-        emit Swap(msg.sender, tokenIn, tokenOut, amountIn, amountOut, fee);
+        userTrades[msg.sender].push(trade);
+        allTrades.push(trade);
         
-        return amountOut;
+        emit TokensSwapped(msg.sender, tokenIn, tokenOut, amountIn, amountOut);
     }
-
-    /**
-     * @dev Get output amount for a given input (including fee)
-     */
+    
     function getAmountOut(
         uint256 amountIn,
         address tokenIn,
         address tokenOut
-    ) public view returns (uint256 amountOut) {
-        require(amountIn > 0, "DataAMM: insufficient input amount");
-        require(tokenIn != tokenOut, "DataAMM: identical tokens");
-        
-        (address token0, address token1) = tokenIn < tokenOut ? (tokenIn, tokenOut) : (tokenOut, tokenIn);
-        Pool storage pool = pools[token0][token1];
-        
-        require(pool.totalLiquidity > 0, "DataAMM: no liquidity");
-        
-        uint256 amountInWithFee = amountIn * (10000 - FEE_RATE);
-        
-        if (tokenIn == token0) {
-            uint256 numerator = amountInWithFee * pool.reserveB;
-            uint256 denominator = (pool.reserveA * 10000) + amountInWithFee;
-            amountOut = numerator / denominator;
-        } else {
-            uint256 numerator = amountInWithFee * pool.reserveA;
-            uint256 denominator = (pool.reserveB * 10000) + amountInWithFee;
-            amountOut = numerator / denominator;
-        }
-        
-        return amountOut;
-    }
-
-    /**
-     * @dev Get input amount required for a given output
-     */
-    function getAmountIn(
-        uint256 amountOut,
-        address tokenIn,
-        address tokenOut
-    ) public view returns (uint256 amountIn) {
-        require(amountOut > 0, "DataAMM: insufficient output amount");
-        require(tokenIn != tokenOut, "DataAMM: identical tokens");
-        
-        (address token0, address token1) = tokenIn < tokenOut ? (tokenIn, tokenOut) : (tokenOut, tokenIn);
-        Pool storage pool = pools[token0][token1];
-        
-        require(pool.totalLiquidity > 0, "DataAMM: no liquidity");
-        
-        if (tokenIn == token0) {
-            require(amountOut < pool.reserveB, "DataAMM: insufficient liquidity");
-            uint256 numerator = pool.reserveA * amountOut * 10000;
-            uint256 denominator = (pool.reserveB - amountOut) * (10000 - FEE_RATE);
-            amountIn = (numerator / denominator) + 1;
-        } else {
-            require(amountOut < pool.reserveA, "DataAMM: insufficient liquidity");
-            uint256 numerator = pool.reserveB * amountOut * 10000;
-            uint256 denominator = (pool.reserveA - amountOut) * (10000 - FEE_RATE);
-            amountIn = (numerator / denominator) + 1;
-        }
-        
-        return amountIn;
-    }
-
-    /**
-     * @dev Get reserves for a token pair
-     */
-    function getReserves(address tokenA, address tokenB) 
-        public view returns (uint256 reserveA, uint256 reserveB) {
-        (address token0, address token1) = tokenA < tokenB ? (tokenA, tokenB) : (tokenB, tokenA);
-        Pool storage pool = pools[token0][token1];
-        
-        if (tokenA == token0) {
-            return (pool.reserveA, pool.reserveB);
-        } else {
-            return (pool.reserveB, pool.reserveA);
-        }
-    }
-
-    /**
-     * @dev Get liquidity balance for a user in a specific pool
-     */
-    function getLiquidityBalance(
-        address user,
-        address tokenA,
-        address tokenB
     ) public view returns (uint256) {
-        (address token0, address token1) = tokenA < tokenB ? (tokenA, tokenB) : (tokenB, tokenA);
-        return pools[token0][token1].liquidityBalance[user];
-    }
-
-    /**
-     * @dev Get pool information
-     */
-    function getPoolInfo(address tokenA, address tokenB) 
-        public view returns (
-            uint256 reserveA,
-            uint256 reserveB,
-            uint256 totalLiquidity,
-            uint256 lastUpdate
-        ) {
-        (address token0, address token1) = tokenA < tokenB ? (tokenA, tokenB) : (tokenB, tokenA);
-        Pool storage pool = pools[token0][token1];
+        bytes32 poolKey = getPoolKey(tokenIn, tokenOut);
+        Pool storage pool = pools[poolKey];
+        require(pool.tokenA != address(0), "Pool does not exist");
         
-        if (tokenA == token0) {
-            return (pool.reserveA, pool.reserveB, pool.totalLiquidity, pool.lastUpdate);
-        } else {
-            return (pool.reserveB, pool.reserveA, pool.totalLiquidity, pool.lastUpdate);
+        uint256 reserveIn = tokenIn == pool.tokenA ? pool.reserveA : pool.reserveB;
+        uint256 reserveOut = tokenIn == pool.tokenA ? pool.reserveB : pool.reserveA;
+        
+        require(reserveIn > 0 && reserveOut > 0, "Insufficient liquidity");
+        
+        uint256 amountInWithFee = amountIn * 997; // 0.3% fee
+        uint256 numerator = amountInWithFee * reserveOut;
+        uint256 denominator = (reserveIn * 1000) + amountInWithFee;
+        
+        return numerator / denominator;
+    }
+    
+    function getPoolInfo(address tokenA, address tokenB) external view returns (
+        uint256 reserveA,
+        uint256 reserveB,
+        uint256 totalLiquidity
+    ) {
+        bytes32 poolKey = getPoolKey(tokenA, tokenB);
+        Pool storage pool = pools[poolKey];
+        return (pool.reserveA, pool.reserveB, pool.totalLiquidity);
+    }
+    
+    function getUserTrades(address user) external view returns (Trade[] memory) {
+        return userTrades[user];
+    }
+    
+    function getAllTrades() external view returns (Trade[] memory) {
+        return allTrades;
+    }
+    
+    function sqrt(uint256 x) internal pure returns (uint256) {
+        if (x == 0) return 0;
+        uint256 z = (x + 1) / 2;
+        uint256 y = x;
+        while (z < y) {
+            y = z;
+            z = (x / z + z) / 2;
         }
+        return y;
     }
-
-    /**
-     * @dev Get trade history length
-     */
-    function getTradeHistoryLength() public view returns (uint256) {
-        return tradeHistory.length;
-    }
-
-    /**
-     * @dev Get recent trades
-     */
-    function getRecentTrades(uint256 count) public view returns (TradeInfo[] memory) {
-        if (count > tradeHistory.length) {
-            count = tradeHistory.length;
-        }
-        
-        TradeInfo[] memory recentTrades = new TradeInfo[](count);
-        uint256 startIndex = tradeHistory.length - count;
-        
-        for (uint256 i = 0; i < count; i++) {
-            recentTrades[i] = tradeHistory[startIndex + i];
-        }
-        
-        return recentTrades;
-    }
-
-    /**
-     * @dev Admin functions
-     */
-    function setFeeRecipient(address _feeRecipient) external onlyOwner {
-        require(_feeRecipient != address(0), "DataAMM: invalid fee recipient");
-        feeRecipient = _feeRecipient;
-    }
-
-    function setTradingEnabled(bool _enabled) external onlyOwner {
-        tradingEnabled = _enabled;
-    }
-
-    function transferOwnership(address newOwner) external onlyOwner {
-        require(newOwner != address(0), "DataAMM: new owner is the zero address");
-        owner = newOwner;
-    }
-
-    /**
-     * @dev Get fee rate
-     */
-    function feeRate() public pure returns (uint256) {
-        return FEE_RATE;
-    }
-
-    // Utility functions
+    
     function min(uint256 a, uint256 b) internal pure returns (uint256) {
         return a < b ? a : b;
-    }
-
-    function sqrt(uint256 y) internal pure returns (uint256 z) {
-        if (y > 3) {
-            z = y;
-            uint256 x = y / 2 + 1;
-            while (x < z) {
-                z = x;
-                x = (y / x + x) / 2;
-            }
-        } else if (y != 0) {
-            z = 1;
-        }
     }
 }
