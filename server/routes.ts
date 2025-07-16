@@ -266,7 +266,87 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json({ tokens });
     } catch (error) {
       console.error("Failed to get tokens by creator:", error);
-      res.status(500).json({ error: "Failed to get tokens by creator" });
+      res.status(500).json({ error: "Failed to get tokens by creator", details: error.message });
+    }
+  });
+
+  // Get trading quote
+  app.get("/api/trade/quote", async (req, res) => {
+    try {
+      const { fromToken, toToken, amount } = req.query;
+      
+      if (!fromToken || !toToken || !amount) {
+        return res.status(400).json({ error: "Missing required parameters" });
+      }
+      
+      const fromTokenData = await storage.getDataTokenByAddress(fromToken as string);
+      const toTokenData = await storage.getDataTokenByAddress(toToken as string);
+      
+      if (!fromTokenData || !toTokenData) {
+        return res.status(404).json({ error: "Token not found" });
+      }
+      
+      // Calculate exchange rate based on token prices
+      const exchangeRate = fromTokenData.currentPrice / toTokenData.currentPrice;
+      const outputAmount = (parseFloat(amount as string) * exchangeRate).toFixed(6);
+      const priceImpact = 0.1; // 0.1% price impact
+      const fee = (parseFloat(amount as string) * 0.003).toFixed(6); // 0.3% fee
+      
+      res.json({
+        quote: {
+          fromToken: fromTokenData.tokenAddress,
+          toToken: toTokenData.tokenAddress,
+          amountIn: amount,
+          amountOut: outputAmount,
+          exchangeRate: exchangeRate.toFixed(6),
+          priceImpact: priceImpact.toFixed(3),
+          fee,
+          minAmountOut: (parseFloat(outputAmount) * 0.995).toFixed(6) // 0.5% slippage
+        }
+      });
+    } catch (error) {
+      console.error("Failed to get quote:", error);
+      res.status(500).json({ error: "Failed to get quote" });
+    }
+  });
+
+  // Execute token trade
+  app.post("/api/trade", async (req, res) => {
+    try {
+      const { fromToken, toToken, amountIn, amountOut, traderAddress, slippage } = req.body;
+      
+      if (!fromToken || !toToken || !amountIn || !amountOut || !traderAddress) {
+        return res.status(400).json({ error: "Missing required parameters" });
+      }
+      
+      // Validate tokens exist
+      const fromTokenData = await storage.getDataTokenByAddress(fromToken);
+      const toTokenData = await storage.getDataTokenByAddress(toToken);
+      
+      if (!fromTokenData || !toTokenData) {
+        return res.status(404).json({ error: "Token not found" });
+      }
+      
+      // Create trade record
+      const trade = await storage.createTrade({
+        fromTokenAddress: fromToken,
+        toTokenAddress: toToken,
+        amountIn: amountIn.toString(),
+        amountOut: amountOut.toString(),
+        traderAddress,
+        transactionHash: '0x' + Math.random().toString(16).substr(2, 64), // Mock transaction hash
+        pricePerToken: parseFloat(amountOut) / parseFloat(amountIn),
+        feeAmount: (parseFloat(amountIn) * 0.003).toString()
+      });
+      
+      res.json({
+        success: true,
+        trade,
+        message: "Trade executed successfully"
+      });
+    } catch (error) {
+      console.error("Trade execution failed:", error);
+      res.status(500).json({ error: "Trade execution failed" });
     }
   });
 

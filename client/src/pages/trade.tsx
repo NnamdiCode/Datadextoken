@@ -78,9 +78,9 @@ export default function Trade() {
         return null;
       }
       const params = new URLSearchParams({
-        tokenIn: fromToken,
-        tokenOut: toToken,
-        amountIn: fromAmount,
+        fromToken: fromToken,
+        toToken: toToken,
+        amount: fromAmount,
       });
       const response = await fetch(`/api/trade/quote?${params}`);
       if (!response.ok) throw new Error('Failed to get quote');
@@ -92,11 +92,12 @@ export default function Trade() {
   // Execute trade mutation
   const tradeMutation = useMutation({
     mutationFn: async (tradeData: {
-      fromTokenAddress: string;
-      toTokenAddress: string;
+      fromToken: string;
+      toToken: string;
       amountIn: string;
-      minAmountOut: string;
+      amountOut: string;
       traderAddress: string;
+      slippage: number;
     }) => {
       return apiRequest('POST', '/api/trade', tradeData);
     },
@@ -104,6 +105,8 @@ export default function Trade() {
       toast({ title: 'Trade executed successfully!' });
       setFromAmount('');
       setToAmount('');
+      setFromToken('');
+      setToToken('');
       queryClient.invalidateQueries({ queryKey: ['/api/trades'] });
       queryClient.invalidateQueries({ queryKey: ['/api/tokens'] });
     },
@@ -118,8 +121,8 @@ export default function Trade() {
 
   // Update toAmount when quote changes
   useEffect(() => {
-    if (quoteData?.amountOut) {
-      setToAmount(parseFloat(quoteData.amountOut).toFixed(6));
+    if (quoteData?.quote?.amountOut) {
+      setToAmount(parseFloat(quoteData.quote.amountOut).toFixed(6));
     } else {
       setToAmount('');
     }
@@ -161,16 +164,18 @@ export default function Trade() {
       return;
     }
 
-    const minAmountOut = quoteData ? 
-      (parseFloat(quoteData.amountOut) * (1 - slippage / 100)).toString() : 
-      '0';
+    if (!toAmount || parseFloat(toAmount) === 0) {
+      toast({ title: 'Invalid quote - please try again', variant: 'destructive' });
+      return;
+    }
 
     tradeMutation.mutate({
-      fromTokenAddress: fromToken,
-      toTokenAddress: toToken,
+      fromToken: fromToken,
+      toToken: toToken,
       amountIn: fromAmount,
-      minAmountOut,
+      amountOut: toAmount,
       traderAddress: account,
+      slippage: slippage,
     });
   };
 

@@ -43,6 +43,72 @@ export class MemStorage implements IStorage {
     this.liquidityPools = new Map();
     this.users = new Map();
     this.currentId = 1;
+    
+    // Add sample data for testing
+    this.initializeSampleData();
+  }
+  
+  private initializeSampleData() {
+    // Create sample tokens for testing
+    const sampleTokens = [
+      {
+        tokenAddress: '0x1234567890123456789012345678901234567890',
+        irysTransactionId: 'sample-irys-id-1',
+        name: 'Weather Data Pack',
+        symbol: 'WTHR',
+        description: 'Global weather data for ML training',
+        creatorAddress: '0xabc123def456789012345678901234567890abcd',
+        fileSize: 1024000,
+        fileType: 'application/json',
+        fileName: 'weather_data.json',
+        imageUrl: '',
+        totalSupply: '1000000000',
+        currentPrice: 0.008,
+        volume24h: 1500,
+        priceChange24h: 5.2,
+      },
+      {
+        tokenAddress: '0x2345678901234567890123456789012345678901',
+        irysTransactionId: 'sample-irys-id-2',
+        name: 'Stock Market Dataset',
+        symbol: 'STOCK',
+        description: 'Historical stock price data',
+        creatorAddress: '0xdef456789012345678901234567890abcdef123',
+        fileSize: 2048000,
+        fileType: 'text/csv',
+        fileName: 'stock_data.csv',
+        imageUrl: '',
+        totalSupply: '1000000000',
+        currentPrice: 0.012,
+        volume24h: 2300,
+        priceChange24h: -2.1,
+      },
+      {
+        tokenAddress: '0x3456789012345678901234567890123456789012',
+        irysTransactionId: 'sample-irys-id-3',
+        name: 'Image Dataset',
+        symbol: 'IMG',
+        description: 'Curated image dataset for computer vision',
+        creatorAddress: '0x456789012345678901234567890abcdef123456',
+        fileSize: 5120000,
+        fileType: 'application/zip',
+        fileName: 'images.zip',
+        imageUrl: '',
+        totalSupply: '1000000000',
+        currentPrice: 0.015,
+        volume24h: 890,
+        priceChange24h: 8.7,
+      }
+    ];
+    
+    sampleTokens.forEach(tokenData => {
+      const token = {
+        id: this.currentId++,
+        ...tokenData,
+        createdAt: new Date()
+      };
+      this.dataTokens.set(token.id, token);
+    });
   }
 
   // Data Tokens
@@ -76,8 +142,12 @@ export class MemStorage implements IStorage {
   }
 
   async getTokensByCreator(creatorAddress: string): Promise<DataToken[]> {
+    if (!creatorAddress || typeof creatorAddress !== 'string') {
+      return [];
+    }
+    
     return Array.from(this.dataTokens.values()).filter(token => 
-      token.creatorAddress.toLowerCase() === creatorAddress.toLowerCase()
+      token.creatorAddress && token.creatorAddress.toLowerCase() === creatorAddress.toLowerCase()
     );
   }
 
