@@ -80,19 +80,6 @@ export default function UploadPage() {
 
   const uploadMutation = useMutation({
     mutationFn: async (formData: FormData) => {
-      // Add necessary metadata for Irys blockchain upload
-      formData.append('tokenId', tokenId);
-      formData.append('name', name);
-      formData.append('description', description);
-      formData.append('category', category);
-      formData.append('creatorAddress', account || '');
-      formData.append('calculatedPrice', calculateTokenPrice().toString());
-      
-      // Add image file if selected
-      if (imageFile) {
-        formData.append('image', imageFile);
-      }
-      
       const response = await fetch('/api/upload', {
         method: 'POST',
         body: formData,
@@ -204,7 +191,7 @@ export default function UploadPage() {
     formData.append('description', description);
     formData.append('category', category);
     formData.append('creatorAddress', account);
-    formData.append('calculatedPrice', calculatedPrice.toString());
+    formData.append('calculatedPrice', calculateTokenPrice());
     
     uploadMutation.mutate(formData);
   };
@@ -487,7 +474,7 @@ export default function UploadPage() {
                   <p className="text-sm text-gray-400">Size: {file ? (file.size / 1024 / 1024).toFixed(2) : '0'} MB</p>
                 </div>
                 <div className="text-right">
-                  <p className="text-lg font-medium">{selectedFee} IRYS</p>
+                  <p className="text-lg font-medium">{calculateTokenPrice()} IRYS</p>
                   <p className="text-xs text-gray-400">Upload Fee</p>
                 </div>
               </div>
@@ -500,7 +487,7 @@ export default function UploadPage() {
                   <div>
                     <p className="text-sm font-medium text-yellow-300">Payment Required</p>
                     <p className="text-xs text-gray-300 mt-1">
-                      You need to pay {selectedFee} IRYS testnet tokens to upload and tokenize your data. 
+                      You need to pay {calculateTokenPrice()} IRYS testnet tokens to upload and tokenize your data. 
                       This fee covers Irys storage costs and creates your tradable data token.
                     </p>
                   </div>
@@ -726,7 +713,7 @@ export default function UploadPage() {
                 
                 <div className="flex justify-between">
                   <span className="text-gray-400">Upload Fee</span>
-                  <span className="font-medium">0.005 IRYS</span>
+                  <span className="font-medium">{calculateTokenPrice()} IRYS</span>
                 </div>
 
                 {paymentTxHash && (
@@ -739,10 +726,10 @@ export default function UploadPage() {
                 <div className="border-t border-white/10 pt-4">
                   <div className="flex justify-between font-medium">
                     <span>Total Cost</span>
-                    <span>0.005 IRYS</span>
+                    <span>{calculateTokenPrice()} IRYS</span>
                   </div>
                   <p className="text-xs text-gray-400 mt-1">
-                    This creates a tradable data token with 1M supply at 0.005 IRYS initial price
+                    This creates a tradable data token with 1 billion supply at {calculateTokenPrice()} IRYS initial price
                   </p>
                 </div>
               </div>
