@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { ArrowRight, Check, Clock, FileText, Info, Upload, BarChart2, AlertCircle, Image, X } from 'lucide-react';
+import { ArrowRight, Check, Clock, FileText, Info, Upload, BarChart2, AlertCircle, Image, X, Copy, ExternalLink } from 'lucide-react';
 import GlassCard from '../components/GlassCard';
 import Button from '../components/Button';
 import { useToast } from '../hooks/use-toast';
@@ -491,6 +491,36 @@ export default function UploadPage() {
                     </span>
                   </div>
                   
+                  <div className="mb-4 border-t border-white/10 pt-4">
+                    <div className="flex justify-between items-center mb-2">
+                      <span className="text-sm text-gray-400">Irys Transaction</span>
+                      <div className="flex items-center space-x-1">
+                        <button
+                          onClick={() => {
+                            navigator.clipboard.writeText(tokenResult.token.irysTransactionId);
+                            toast({ title: 'Transaction ID copied!' });
+                          }}
+                          className="p-1 hover:bg-white/10 rounded transition-colors"
+                          title="Copy transaction ID"
+                        >
+                          <Copy size={12} />
+                        </button>
+                      </div>
+                    </div>
+                    <div className="text-xs font-mono text-gray-300 break-all mb-2">
+                      {tokenResult.token.irysTransactionId}
+                    </div>
+                    <a
+                      href={`https://devnet.irys.xyz/tx/${tokenResult.token.irysTransactionId}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center text-xs text-blue-400 hover:text-blue-300 transition-colors"
+                    >
+                      <ExternalLink size={12} className="mr-1" />
+                      View on Irys Devnet Explorer
+                    </a>
+                  </div>
+                  
                   <div className="flex justify-between items-center">
                     <span className="text-sm text-gray-400">Fee Paid</span>
                     <span className="text-sm">0.005 IRYS</span>
@@ -515,19 +545,36 @@ export default function UploadPage() {
                 </Button>
               </div>
 
-              {tokenResult.irysUrl && (
-                <div className="mt-6 p-4 bg-blue-500/10 border border-blue-500/30 rounded-lg">
-                  <p className="text-sm text-gray-300 mb-2">Your data is permanently stored on Irys:</p>
+              <div className="mt-6 p-4 bg-blue-500/10 border border-blue-500/30 rounded-lg">
+                <div className="flex items-center mb-2">
+                  <Info size={16} className="text-blue-400 mr-2" />
+                  <p className="text-sm text-blue-300 font-medium">Data Permanently Stored on Irys Blockchain</p>
+                </div>
+                <p className="text-xs text-gray-300 mb-3">
+                  Your data is now immutably stored on the Irys blockchain with guaranteed availability. 
+                  Use the transaction ID above to verify and access your data at any time.
+                </p>
+                <div className="flex flex-col sm:flex-row gap-2">
                   <a 
-                    href={tokenResult.irysUrl}
+                    href={`https://devnet.irys.xyz/tx/${tokenResult.token.irysTransactionId}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-blue-400 hover:text-blue-300 text-sm break-all"
+                    className="inline-flex items-center justify-center px-3 py-1.5 bg-blue-500/20 hover:bg-blue-500/30 border border-blue-500/30 rounded text-xs text-blue-300 transition-colors"
                   >
-                    {tokenResult.irysUrl}
+                    <ExternalLink size={12} className="mr-1" />
+                    View Transaction
+                  </a>
+                  <a 
+                    href={`https://devnet.irys.xyz/`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center justify-center px-3 py-1.5 bg-blue-500/20 hover:bg-blue-500/30 border border-blue-500/30 rounded text-xs text-blue-300 transition-colors"
+                  >
+                    <ExternalLink size={12} className="mr-1" />
+                    Irys Devnet Explorer
                   </a>
                 </div>
-              )}
+              </div>
             </div>
           </div>
         )}

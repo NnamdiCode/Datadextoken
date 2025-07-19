@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { ArrowRight, Upload, TrendingUp, Shield, Zap, Globe } from "lucide-react";
+import { ArrowRight, Upload, TrendingUp, Shield, Zap, Globe, ExternalLink, Copy } from "lucide-react";
 import { Link } from "wouter";
 import GlassCard from "../components/GlassCard";
 import Button from "../components/Button";
@@ -132,13 +132,30 @@ export default function Home() {
                     {token.description || "No description provided"}
                   </p>
                   
-                  <div className="flex justify-between items-center">
-                    <span className="text-xs bg-blue-500/20 text-blue-400 px-2 py-1 rounded-full">
-                      {token.fileType.split('/')[1]?.toUpperCase() || 'DATA'}
-                    </span>
-                    <span className="text-xs text-gray-400">
-                      {new Date(token.createdAt).toLocaleDateString()}
-                    </span>
+                  <div className="space-y-3">
+                    <div className="flex justify-between items-center">
+                      <span className="text-xs bg-blue-500/20 text-blue-400 px-2 py-1 rounded-full">
+                        {token.fileType.split('/')[1]?.toUpperCase() || 'DATA'}
+                      </span>
+                      <span className="text-xs text-gray-400">
+                        {new Date(token.createdAt).toLocaleDateString()}
+                      </span>
+                    </div>
+                    
+                    <div className="border-t border-white/10 pt-3">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs text-gray-400">On Irys Blockchain</span>
+                        <a
+                          href={`https://devnet.irys.xyz/tx/${token.irysTransactionId}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center text-xs text-blue-400 hover:text-blue-300 transition-colors"
+                        >
+                          <ExternalLink size={10} className="mr-1" />
+                          View
+                        </a>
+                      </div>
+                    </div>
                   </div>
                 </GlassCard>
               ))}
