@@ -1,6 +1,6 @@
 import { Link, useLocation } from 'wouter';
 import { motion } from 'framer-motion';
-import { Upload, TrendingUp, Home, Menu, X } from 'lucide-react';
+import { Upload, TrendingUp, Home, Menu, X, Clock, Droplets } from 'lucide-react';
 import { useState } from 'react';
 import Button from './Button';
 import WalletConnect from './WalletConnect';
@@ -17,6 +17,8 @@ export default function Layout({ children }: LayoutProps) {
     { name: 'Home', href: '/', icon: Home },
     { name: 'Upload', href: '/upload', icon: Upload },
     { name: 'Trade', href: '/trade', icon: TrendingUp },
+    { name: 'Transactions', href: '/transactions', icon: Clock },
+    { name: 'Liquidity', href: '/liquidity', icon: Droplets },
   ];
 
   const isActive = (href: string) => {

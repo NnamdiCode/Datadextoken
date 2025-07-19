@@ -49,15 +49,16 @@ Preferred communication style: Simple, everyday language.
 - Base fee of 0.005 IRYS testnet tokens charged for every token created
 - Token ID is the token name, contract address is actual Irys blockchain address
 
-### Trading System
-- Automated Market Maker (AMM) for token-to-token swaps
+### Trading System (Uniswap-like AMM)
+- Automated Market Maker using x*y=k constant product formula
 - Real-time price charts with dynamic token price data
 - Searchable token marketplace with filtering capabilities
 - Only last 100 tokens shown in selection dropdown, others searchable
 - Users can search and exchange any tokens with their own tokens
-- Dynamic pricing based on supply and demand market forces
-- Liquidity pools for improved trading efficiency
+- Liquidity pools with 0.3% trading fee (like Uniswap)
 - Slippage protection and transaction fee estimation
+- Smart contract deployed on Irys VM for decentralized trading
+- Pool reserves automatically updated after each trade
 
 ### Wallet Management
 - Web3 wallet connection with account management
@@ -73,13 +74,18 @@ Preferred communication style: Simple, everyday language.
 - Real-time updates using React Query
 - Toast notifications for user feedback
 - Loading states and error handling
+- Transaction history page with Irys blockchain integration
+- Liquidity pool management interface
+- Real-time AMM pool statistics and analytics
 
 ## Data Flow
 
 1. **Upload Process**: User selects file + optional image → File validation → Irys upload with metadata → Token creation → In-memory storage
-2. **Trading Process**: User initiates swap → AMM calculates exchange rate → Smart contract execution → Trade recording
-3. **Price Discovery**: Market activity updates → Real-time price calculation → Dynamic chart data → UI refresh
-4. **Search & Discovery**: Real-time token search → Filterable marketplace → Price tracking → Trading analytics
+2. **Trading Process**: User initiates swap → AMM calculates exchange rate using x*y=k → Smart contract execution on Irys VM → Pool reserves updated → Trade recording
+3. **Liquidity Management**: User adds/removes liquidity → Pool reserves adjusted → Liquidity tokens minted/burned → Fee collection
+4. **Price Discovery**: Market activity updates → Real-time AMM price calculation → Dynamic chart data → UI refresh
+5. **Transaction Tracking**: All transactions recorded on Irys blockchain → Real-time transaction history → Block explorer integration
+6. **Search & Discovery**: Real-time token search → Filterable marketplace → Price tracking → Trading analytics
 
 ## External Dependencies
 

@@ -7,6 +7,8 @@ import Layout from "./components/Layout";
 import Home from "./pages/home";
 import Upload from "./pages/upload";
 import Trade from "./pages/trade";
+import Transactions from "./pages/transactions";
+import Liquidity from "./pages/liquidity";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -16,6 +18,8 @@ function Router() {
         <Route path="/" component={Home} />
         <Route path="/upload" component={Upload} />
         <Route path="/trade" component={Trade} />
+        <Route path="/transactions" component={Transactions} />
+        <Route path="/liquidity" component={Liquidity} />
         <Route component={NotFound} />
       </Switch>
     </Layout>
