@@ -125,3 +125,10 @@ Preferred communication style: Simple, everyday language.
 - Production: Mainnet deployment with real value transactions
 
 The application follows a modular architecture with clear separation between frontend, backend, and blockchain components. The use of TypeScript throughout ensures type safety, while the combination of modern React patterns and established blockchain tools provides a robust foundation for decentralized data trading.
+
+## Recent Changes
+- **January 19, 2025**: Implemented automatic swap calculations using real-time exchange rates
+- **January 19, 2025**: Removed duplicate wallet logos, keeping only top-right corner display
+- **January 19, 2025**: Fixed token ID registration to avoid duplication in upload process
+- **January 19, 2025**: Set total supply to 1 billion tokens with market cap calculations
+- **January 19, 2025**: Enhanced token displays with market cap information across all pages

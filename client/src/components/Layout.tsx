@@ -79,8 +79,7 @@ export default function Layout({ children }: LayoutProps) {
             </div>
 
             {/* Mobile menu button */}
-            <div className="md:hidden flex items-center space-x-2">
-              <WalletConnect />
+            <div className="md:hidden flex items-center">
               <Button
                 variant="ghost"
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}

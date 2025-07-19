@@ -199,9 +199,12 @@ export default function UploadPage() {
     if (imageFile) {
       formData.append('image', imageFile);
     }
+    formData.append('tokenId', tokenId);
     formData.append('name', name);
     formData.append('description', description);
+    formData.append('category', category);
     formData.append('creatorAddress', account);
+    formData.append('calculatedPrice', calculatedPrice.toString());
     
     uploadMutation.mutate(formData);
   };

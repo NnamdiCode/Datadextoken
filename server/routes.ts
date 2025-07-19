@@ -147,7 +147,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         fileType: dataFile.mimetype || 'application/octet-stream',
         fileName: dataFile.originalname,
         imageUrl,
-        totalSupply: '1000000000',
+        totalSupply: '1000000000', // 1 billion tokens
         currentPrice: parseFloat(calculatedPrice) || 0.005, // Use calculated price
         volume24h: 0,
         priceChange24h: 0,

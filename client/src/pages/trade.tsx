@@ -119,14 +119,27 @@ export default function Trade() {
     },
   });
 
-  // Update toAmount when quote changes
+  // Calculate automatic swap amounts using simple exchange rate
   useEffect(() => {
-    if (quoteData?.quote?.amountOut) {
-      setToAmount(parseFloat(quoteData.quote.amountOut).toFixed(6));
+    if (fromToken && toToken && fromAmount && parseFloat(fromAmount) > 0) {
+      const fromTokenData = tokens.find((t: any) => t.tokenAddress === fromToken);
+      const toTokenData = tokens.find((t: any) => t.tokenAddress === toToken);
+      
+      if (fromTokenData && toTokenData) {
+        // Simple exchange rate calculation: (fromPrice / toPrice) * fromAmount
+        const fromPrice = fromTokenData.currentPrice || 0.005;
+        const toPrice = toTokenData.currentPrice || 0.005;
+        const exchangeRate = fromPrice / toPrice;
+        const calculatedToAmount = parseFloat(fromAmount) * exchangeRate;
+        
+        // Apply 0.3% trading fee
+        const afterFee = calculatedToAmount * 0.997;
+        setToAmount(afterFee.toFixed(6));
+      }
     } else {
       setToAmount('');
     }
-  }, [quoteData]);
+  }, [fromToken, toToken, fromAmount, tokens]);
 
   const filteredTokens = tokens.filter((token: any) => {
     if (!searchQuery) return true;
@@ -274,7 +287,6 @@ export default function Trade() {
           <h1 className="text-3xl font-bold mb-2">Trade Data Tokens</h1>
           <p className="text-gray-300">Swap your data tokens using our automated market maker</p>
         </div>
-        <WalletConnect />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -356,21 +368,19 @@ export default function Trade() {
                 </div>
               </div>
               
-              {quoteData && fromAmount && (
+              {fromToken && toToken && fromAmount && toAmount && (
                 <div className="mb-6 px-3 py-2 bg-white/5 rounded-md text-sm">
                   <div className="flex justify-between text-gray-400">
-                    <span>Rate</span>
-                    <span>1 : {(parseFloat(quoteData.amountOut) / parseFloat(fromAmount)).toFixed(6)}</span>
+                    <span>Exchange Rate</span>
+                    <span>1 : {(parseFloat(toAmount) / parseFloat(fromAmount)).toFixed(6)}</span>
                   </div>
                   <div className="flex justify-between text-gray-400 mt-1">
-                    <span>Price Impact</span>
-                    <span className={quoteData.priceImpact > 5 ? 'text-red-400' : 'text-green-400'}>
-                      {quoteData.priceImpact.toFixed(2)}%
-                    </span>
-                  </div>
-                  <div className="flex justify-between text-gray-400 mt-1">
-                    <span>Fee</span>
+                    <span>Trading Fee</span>
                     <span>0.3%</span>
+                  </div>
+                  <div className="flex justify-between text-gray-400 mt-1">
+                    <span>You will receive</span>
+                    <span className="text-white font-medium">{toAmount}</span>
                   </div>
                 </div>
               )}
@@ -477,7 +487,10 @@ export default function Trade() {
                   </div>
                   <div className="text-right">
                     <div className="font-medium">{(token.currentPrice || 0.005).toFixed(3)} IRYS</div>
-                    <div className="text-xs text-gray-400 mt-1">
+                    <div className="text-xs text-gray-400">
+                      Cap: {(((token.currentPrice || 0.005) * 1000000000) / 1000000).toFixed(1)}M
+                    </div>
+                    <div className="text-xs text-gray-400">
                       {(token.fileSize / 1024 / 1024).toFixed(2)} MB
                     </div>
                   </div>

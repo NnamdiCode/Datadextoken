@@ -123,8 +123,11 @@ export default function Home() {
                       <p className="text-sm text-gray-400">{token.symbol}</p>
                     </div>
                     <div className="text-right">
-                      <p className="text-sm text-gray-400">Size</p>
-                      <p className="font-medium">{(token.fileSize / 1024 / 1024).toFixed(2)} MB</p>
+                      <p className="text-sm text-blue-400 font-medium">{token.currentPrice.toFixed(3)} IRYS</p>
+                      <p className="text-xs text-gray-400">
+                        Cap: {((token.currentPrice * 1000000000) / 1000000).toFixed(1)}M
+                      </p>
+                      <p className="text-xs text-gray-400">{(token.fileSize / 1024 / 1024).toFixed(2)} MB</p>
                     </div>
                   </div>
                   
