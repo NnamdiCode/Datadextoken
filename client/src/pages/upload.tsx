@@ -15,6 +15,7 @@ export default function UploadPage() {
   const [tokenId, setTokenId] = useState('');
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
+  const [category, setCategory] = useState('');
   const [selectedFee, setSelectedFee] = useState('0.0002');
   const [isConfirmationOpen, setIsConfirmationOpen] = useState(false);
   const [tokenResult, setTokenResult] = useState<any>(null);
@@ -27,12 +28,65 @@ export default function UploadPage() {
   const queryClient = useQueryClient();
   const { account, isConnected } = useWallet();
 
+  const dataCategories = [
+    { value: 'financial', label: 'Financial Data', basePrice: 0.05 },
+    { value: 'research', label: 'Research & Science', basePrice: 0.03 },
+    { value: 'media', label: 'Media & Entertainment', basePrice: 0.02 },
+    { value: 'marketing', label: 'Marketing & Analytics', basePrice: 0.025 },
+    { value: 'healthcare', label: 'Healthcare & Medical', basePrice: 0.04 },
+    { value: 'education', label: 'Educational Content', basePrice: 0.015 },
+    { value: 'business', label: 'Business Intelligence', basePrice: 0.035 },
+    { value: 'government', label: 'Government & Public', basePrice: 0.02 },
+    { value: 'technology', label: 'Technology & Software', basePrice: 0.03 },
+    { value: 'other', label: 'Other/General', basePrice: 0.01 }
+  ];
+
+  // Calculate dynamic pricing based on file size, type, and category
+  const calculateTokenPrice = () => {
+    if (!file || !category) return 0.01;
+    
+    const selectedCategory = dataCategories.find(cat => cat.value === category);
+    const basePrice = selectedCategory?.basePrice || 0.01;
+    
+    // Size multiplier (larger files = higher value)
+    const sizeInMB = file.size / (1024 * 1024);
+    const sizeMultiplier = Math.max(1, Math.log10(sizeInMB + 1) * 0.5 + 1);
+    
+    // File type multiplier (structured data = higher value)
+    const fileTypeMultipliers: { [key: string]: number } = {
+      'application/json': 1.5,
+      'text/csv': 1.4,
+      'application/pdf': 1.2,
+      'application/vnd.ms-excel': 1.3,
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': 1.3,
+      'text/plain': 1.0,
+      'image/': 0.8,
+      'audio/': 0.9,
+      'video/': 1.1,
+      'default': 1.0
+    };
+    
+    let typeMultiplier = fileTypeMultipliers['default'];
+    for (const [type, multiplier] of Object.entries(fileTypeMultipliers)) {
+      if (file.type.startsWith(type)) {
+        typeMultiplier = multiplier;
+        break;
+      }
+    }
+    
+    const finalPrice = basePrice * sizeMultiplier * typeMultiplier;
+    return Math.max(0.005, Math.round(finalPrice * 1000) / 1000); // Min 0.005, round to 3 decimals
+  };
+
   const uploadMutation = useMutation({
     mutationFn: async (formData: FormData) => {
       // Add necessary metadata for Irys blockchain upload
+      formData.append('tokenId', tokenId);
       formData.append('name', name);
       formData.append('description', description);
+      formData.append('category', category);
       formData.append('creatorAddress', account || '');
+      formData.append('calculatedPrice', calculateTokenPrice().toString());
       
       // Add image file if selected
       if (imageFile) {
@@ -121,8 +175,10 @@ export default function UploadPage() {
     setFile(null);
     setImageFile(null);
     setStep(1);
+    setTokenId('');
     setName('');
     setDescription('');
+    setCategory('');
     setSelectedFee('0.0002');
     setTokenResult(null);
     setPaymentTxHash('');
@@ -308,6 +364,56 @@ export default function UploadPage() {
               </div>
               
               <div>
+                <label className="block text-sm font-medium text-gray-300 mb-1">
+                  Data Category*
+                </label>
+                <select
+                  className="w-full bg-white/5 border border-white/10 rounded-md px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary/50 text-white"
+                  value={category}
+                  onChange={(e) => setCategory(e.target.value)}
+                >
+                  <option value="" className="bg-gray-800">Select a category</option>
+                  {dataCategories.map((cat) => (
+                    <option key={cat.value} value={cat.value} className="bg-gray-800">
+                      {cat.label} (Base: {cat.basePrice} IRYS)
+                    </option>
+                  ))}
+                </select>
+                <p className="text-xs text-gray-400 mt-1">
+                  Category affects token pricing. Structured data types command higher prices.
+                </p>
+              </div>
+              
+              {category && file && (
+                <div className="border border-blue-500/30 bg-blue-500/10 rounded-md p-4">
+                  <div className="flex items-center mb-2">
+                    <Info size={16} className="text-blue-400 mr-2" />
+                    <span className="text-sm font-medium text-blue-300">Calculated Token Price</span>
+                  </div>
+                  <div className="space-y-1 text-xs text-gray-300">
+                    <div className="flex justify-between">
+                      <span>Base price ({dataCategories.find(c => c.value === category)?.label}):</span>
+                      <span>{dataCategories.find(c => c.value === category)?.basePrice} IRYS</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>File size ({(file.size / (1024 * 1024)).toFixed(2)} MB):</span>
+                      <span>×{(Math.max(1, Math.log10(file.size / (1024 * 1024) + 1) * 0.5 + 1)).toFixed(2)}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>File type ({file.type || 'unknown'}):</span>
+                      <span>×{file.type.startsWith('application/json') ? '1.5' : file.type.startsWith('text/csv') ? '1.4' : '1.0'}</span>
+                    </div>
+                    <div className="border-t border-blue-500/30 pt-1 mt-2">
+                      <div className="flex justify-between font-medium text-blue-300">
+                        <span>Final Token Price:</span>
+                        <span>{calculateTokenPrice()} IRYS</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+              
+              <div>
                 <div className="flex justify-between items-center mb-1">
                   <label className="block text-sm font-medium text-gray-300">
                     Transaction Fee
@@ -358,7 +464,7 @@ export default function UploadPage() {
               
               <Button 
                 onClick={() => setStep(3)} 
-                disabled={!tokenId || !name || !description || !isConnected}
+                disabled={!tokenId || !name || !description || !category || !isConnected}
               >
                 {!isConnected ? 'Connect Wallet' : 'Continue to Payment'}
               </Button>

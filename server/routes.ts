@@ -91,10 +91,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const dataFile = files.file[0];
       const imageFile = files.image ? files.image[0] : null;
-      const { name, description, creatorAddress } = req.body;
+      const { tokenId, name, description, category, creatorAddress, calculatedPrice } = req.body;
       
-      if (!name || !creatorAddress) {
-        return res.status(400).json({ error: "Name and creator address are required" });
+      if (!tokenId || !name || !category || !creatorAddress) {
+        return res.status(400).json({ error: "Token ID, name, category, and creator address are required" });
       }
 
       console.log(`📤 Processing upload: ${name} by ${creatorAddress}`);
@@ -139,15 +139,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
         tokenAddress: `0x${irysResult.id.slice(0, 40)}`, // Generate token address from Irys ID
         irysTransactionId: irysResult.id,
         name,
-        symbol: 'DATA',
+        symbol: tokenId.toUpperCase(), // Use tokenId as symbol
         description: description || '',
+        category,
         creatorAddress,
         fileSize: dataFile.size,
         fileType: dataFile.mimetype || 'application/octet-stream',
         fileName: dataFile.originalname,
         imageUrl,
         totalSupply: '1000000000',
-        currentPrice: 0.005, // 0.005 IRYS base fee
+        currentPrice: parseFloat(calculatedPrice) || 0.005, // Use calculated price
         volume24h: 0,
         priceChange24h: 0,
       };

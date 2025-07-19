@@ -8,6 +8,7 @@ export interface DataToken {
   name: string;
   symbol: string;
   description?: string;
+  category: string;
   creatorAddress: string;
   fileSize: number;
   fileType: string;
@@ -58,8 +59,9 @@ export const insertDataTokenSchema = z.object({
   tokenAddress: z.string(),
   irysTransactionId: z.string(),
   name: z.string(),
-  symbol: z.string().default("DATA"),
+  symbol: z.string(),
   description: z.string().optional(),
+  category: z.string(),
   creatorAddress: z.string(),
   fileSize: z.number(),
   fileType: z.string(),
@@ -100,8 +102,10 @@ export const insertUserSchema = z.object({
 
 // API request schemas
 export const uploadRequestSchema = z.object({
+  tokenId: z.string().min(1, "Token ID is required"),
   name: z.string().min(1, "Name is required"),
   description: z.string().optional(),
+  category: z.string().min(1, "Category is required"),
   file: z.any(), // File upload
   image: z.any().optional(), // Optional token image
   initialPrice: z.number().min(0, "Price must be positive").default(0.001),

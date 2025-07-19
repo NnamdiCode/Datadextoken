@@ -316,7 +316,7 @@ export default function Trade() {
                     onClick={() => setShowTokenList('from')}
                   >
                     <span className="mr-1 text-white truncate max-w-16">
-                      {fromToken ? tokens.find((t: any) => t.tokenAddress === fromToken)?.symbol || tokens.find((t: any) => t.tokenAddress === fromToken)?.name || 'Unknown' : 'Select'}
+                      {fromToken ? tokens.find((t: any) => t.tokenAddress === fromToken)?.symbol || 'Unknown' : 'Select'}
                     </span>
                     <ChevronDown size={16} />
                   </button>
@@ -349,7 +349,7 @@ export default function Trade() {
                     onClick={() => setShowTokenList('to')}
                   >
                     <span className="mr-1 text-white truncate max-w-16">
-                      {toToken ? tokens.find((t: any) => t.tokenAddress === toToken)?.symbol || tokens.find((t: any) => t.tokenAddress === toToken)?.name || 'Unknown' : 'Select'}
+                      {toToken ? tokens.find((t: any) => t.tokenAddress === toToken)?.symbol || 'Unknown' : 'Select'}
                     </span>
                     <ChevronDown size={16} />
                   </button>
@@ -466,17 +466,17 @@ export default function Trade() {
                 <div className="flex justify-between items-center">
                   <div>
                     <div className="font-medium">{token.name}</div>
-                    <div className="flex items-center mt-1">
-                      <span className="text-xs font-medium text-blue-400 mr-2">
+                    <div className="flex items-center mt-1 space-x-2">
+                      <span className="text-xs font-medium text-blue-400 bg-blue-500/20 px-2 py-1 rounded-full">
                         {token.symbol}
                       </span>
-                      <span className="text-xs text-green-400">
-                        +{Math.random() * 10}%
+                      <span className="text-xs text-purple-400 bg-purple-500/20 px-2 py-1 rounded-full">
+                        {token.category ? token.category.charAt(0).toUpperCase() + token.category.slice(1) : 'Other'}
                       </span>
                     </div>
                   </div>
                   <div className="text-right">
-                    <div className="font-medium">${(Math.random() * 10).toFixed(2)}</div>
+                    <div className="font-medium">{(token.currentPrice || 0.005).toFixed(3)} IRYS</div>
                     <div className="text-xs text-gray-400 mt-1">
                       {(token.fileSize / 1024 / 1024).toFixed(2)} MB
                     </div>

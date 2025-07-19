@@ -142,7 +142,15 @@ export default function Home() {
                       </span>
                     </div>
                     
-                    <div className="border-t border-white/10 pt-3">
+                    <div className="border-t border-white/10 pt-3 space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs text-purple-400 bg-purple-500/20 px-2 py-1 rounded-full">
+                          {token.category ? token.category.charAt(0).toUpperCase() + token.category.slice(1) : 'Other'}
+                        </span>
+                        <span className="text-xs text-blue-400 bg-blue-500/20 px-2 py-1 rounded-full font-mono">
+                          {token.symbol}
+                        </span>
+                      </div>
                       <div className="flex items-center justify-between">
                         <span className="text-xs text-gray-400">On Irys Blockchain</span>
                         <a
