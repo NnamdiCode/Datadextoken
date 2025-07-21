@@ -4,6 +4,7 @@ import { Upload, TrendingUp, Home, Menu, X, Clock, Droplets } from 'lucide-react
 import { useState } from 'react';
 import Button from './Button';
 import WalletConnect from './WalletConnect';
+import NetworkStatus from './NetworkStatus';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -116,6 +117,9 @@ export default function Layout({ children }: LayoutProps) {
           </div>
         )}
       </nav>
+
+      {/* Network Status Notification */}
+      <NetworkStatus />
 
       {/* Main content with proper spacing */}
       <main className="pt-16">

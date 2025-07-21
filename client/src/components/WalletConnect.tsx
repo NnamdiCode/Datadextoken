@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Wallet, ChevronDown, LogOut, Copy, ExternalLink, Coins, Database } from 'lucide-react';
+import { Wallet, ChevronDown, LogOut, Copy, ExternalLink, Coins, Database, AlertTriangle, Network } from 'lucide-react';
 import Button from './Button';
 import GlassCard from './GlassCard';
 import { useWallet } from '../hooks/useWallet';
@@ -9,7 +9,19 @@ export default function WalletConnect() {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [irysBalance, setIrysBalance] = useState<string>('0');
   const [dataTokens, setDataTokens] = useState<any[]>([]);
-  const { account, isConnected, isConnecting, connect, disconnect, provider } = useWallet();
+  const { 
+    account, 
+    isConnected, 
+    isConnecting, 
+    connect, 
+    disconnect, 
+    provider, 
+    chainId, 
+    isIrysNetwork, 
+    switchToIrys, 
+    addIrysNetwork, 
+    networkError 
+  } = useWallet();
   const { toast } = useToast();
 
   // Fetch Irys balance and user data tokens
@@ -57,28 +69,79 @@ export default function WalletConnect() {
     return `${address.slice(0, 6)}...${address.slice(-4)}`;
   };
 
+  const getNetworkName = (chainId: string | null) => {
+    switch (chainId) {
+      case '0x4F6':
+        return 'Irys Devnet';
+      case '0x4F7':
+        return 'Irys Mainnet';
+      case '0x1':
+        return 'Ethereum';
+      case '0x89':
+        return 'Polygon';
+      default:
+        return 'Unknown Network';
+    }
+  };
+
+  const handleSwitchNetwork = async () => {
+    try {
+      const success = await switchToIrys();
+      if (success) {
+        toast({ title: 'Successfully switched to Irys Network' });
+      }
+    } catch (error: any) {
+      toast({ 
+        title: 'Failed to switch network', 
+        description: error.message,
+        variant: 'destructive' 
+      });
+    }
+  };
+
   if (!isConnected) {
     return (
-      <Button
-        onClick={connect}
-        disabled={isConnecting}
-        icon={<Wallet size={16} />}
-      >
-        {isConnecting ? 'Connecting...' : 'Connect Wallet'}
-      </Button>
+      <div className="flex flex-col items-end space-y-2">
+        <Button
+          onClick={connect}
+          disabled={isConnecting}
+          icon={<Wallet size={16} />}
+        >
+          {isConnecting ? 'Connecting...' : 'Connect Wallet'}
+        </Button>
+        {networkError && (
+          <div className="text-xs text-red-400 bg-red-400/10 px-2 py-1 rounded max-w-48 text-right">
+            {networkError}
+          </div>
+        )}
+      </div>
     );
   }
 
   return (
     <div className="relative">
-      <Button
-        variant="outline"
-        onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-        icon={<Wallet size={16} />}
-      >
-        {irysBalance} IRYS
-        <ChevronDown size={16} className="ml-2" />
-      </Button>
+      <div className="flex items-center space-x-2">
+        {!isIrysNetwork && (
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleSwitchNetwork}
+            icon={<AlertTriangle size={14} />}
+            className="border-yellow-500/30 text-yellow-400 hover:bg-yellow-500/10"
+          >
+            Switch to Irys
+          </Button>
+        )}
+        <Button
+          variant="outline"
+          onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+          icon={<Wallet size={16} />}
+          className={!isIrysNetwork ? 'border-yellow-500/30' : ''}
+        >
+          {irysBalance} IRYS
+          <ChevronDown size={16} className="ml-2" />
+        </Button>
+      </div>
 
       {isDropdownOpen && (
         <>
@@ -94,7 +157,37 @@ export default function WalletConnect() {
               <div className="space-y-3">
                 <div className="border-b border-white/10 pb-3">
                   <p className="text-sm text-gray-400 mb-1">Connected Account</p>
-                  <p className="font-mono text-sm text-white">{account}</p>
+                  <p className="font-mono text-sm text-white">{formatAddress(account || '')}</p>
+                </div>
+
+                {/* Network Status */}
+                <div className="border-b border-white/10 pb-3">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center">
+                      <Network size={16} className={isIrysNetwork ? "text-green-400" : "text-yellow-400"} />
+                      <span className="text-sm text-gray-400 ml-2">Network</span>
+                    </div>
+                    <div className="flex items-center">
+                      <span className={`text-sm font-mono ${isIrysNetwork ? 'text-green-400' : 'text-yellow-400'}`}>
+                        {getNetworkName(chainId)}
+                      </span>
+                    </div>
+                  </div>
+                  {!isIrysNetwork && (
+                    <div className="mt-2">
+                      <button
+                        onClick={handleSwitchNetwork}
+                        className="w-full text-xs text-yellow-400 hover:text-yellow-300 bg-yellow-400/10 hover:bg-yellow-400/20 px-2 py-1 rounded transition-colors"
+                      >
+                        Switch to Irys Network
+                      </button>
+                    </div>
+                  )}
+                  {networkError && (
+                    <div className="mt-2 text-xs text-red-400 bg-red-400/10 px-2 py-1 rounded">
+                      {networkError}
+                    </div>
+                  )}
                 </div>
 
                 {/* Irys Balance */}
@@ -134,12 +227,15 @@ export default function WalletConnect() {
 
                 <button
                   onClick={() => {
-                    window.open(`https://testnet-explorer.irys.xyz/address/${account}`, '_blank');
+                    const explorerUrl = isIrysNetwork 
+                      ? `https://explorer.devnet.irys.network/address/${account}`
+                      : `https://etherscan.io/address/${account}`;
+                    window.open(explorerUrl, '_blank');
                   }}
                   className="w-full flex items-center px-3 py-2 text-sm text-gray-300 hover:text-white hover:bg-gray-800 rounded-md transition-colors"
                 >
                   <ExternalLink size={16} className="mr-2" />
-                  View on Explorer
+                  View on {isIrysNetwork ? 'Irys' : 'Block'} Explorer
                 </button>
 
                 <div className="border-t border-gray-700 pt-3">

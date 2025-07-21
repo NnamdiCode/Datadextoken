@@ -61,12 +61,14 @@ Preferred communication style: Simple, everyday language.
 - Pool reserves automatically updated after each trade
 
 ### Wallet Management
-- Web3 wallet connection with account management
-- Transaction signing for blockchain interactions
-- Balance tracking for native and data tokens
-- Wallet dropdown shows user's created tokens
-- Network switching and chain validation
-- All smart contract transactions on Irys VM and Irys devnet
+- **MetaMask Integration**: Full Web3 wallet connection with automatic network detection
+- **Irys Network Support**: Native support for Irys Devnet (Chain ID: 1270) and Mainnet (Chain ID: 1271)
+- **Automatic Network Switching**: One-click switching to Irys network with error handling
+- **Network Status Indicators**: Visual indicators showing current network and compatibility warnings
+- **Multi-Network Support**: Detects Ethereum, Polygon, and other networks with appropriate messaging
+- **Transaction Signing**: Secure transaction signing for blockchain interactions
+- **Balance Tracking**: Real-time IRYS balance and data token tracking
+- **Network Validation**: Ensures users are on the correct network for full functionality
 
 ### User Interface
 - Glass morphism design with gradient backgrounds
@@ -127,6 +129,11 @@ Preferred communication style: Simple, everyday language.
 The application follows a modular architecture with clear separation between frontend, backend, and blockchain components. The use of TypeScript throughout ensures type safety, while the combination of modern React patterns and established blockchain tools provides a robust foundation for decentralized data trading.
 
 ## Recent Changes
+- **January 21, 2025**: Integrated MetaMask wallet adapter with comprehensive Irys network detection
+- **January 21, 2025**: Added automatic network switching functionality for Irys Devnet (Chain ID: 1270)
+- **January 21, 2025**: Implemented NetworkStatus component with visual network compatibility warnings
+- **January 21, 2025**: Enhanced WalletConnect component with network status indicators and switch buttons
+- **January 21, 2025**: Updated color scheme from black to dark grey background with turquoise green accents
 - **January 19, 2025**: Implemented automatic swap calculations using real-time exchange rates
 - **January 19, 2025**: Removed duplicate wallet logos, keeping only top-right corner display
 - **January 19, 2025**: Fixed token ID registration to avoid duplication in upload process
