@@ -77,7 +77,7 @@ export default function Transactions() {
 
   if (!isConnected) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-900/20 via-blue-900/20 to-teal-900/20 p-4">
+      <div className="min-h-screen bg-black p-4">
         <div className="max-w-4xl mx-auto pt-8">
           <div className="text-center py-12">
             <h1 className="text-3xl font-bold mb-4">Transaction History</h1>
@@ -90,7 +90,7 @@ export default function Transactions() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-900/20 via-blue-900/20 to-teal-900/20 p-4">
+    <div className="min-h-screen bg-black p-4">
       <div className="max-w-6xl mx-auto pt-8">
         <div className="mb-8">
           <h1 className="text-3xl font-bold mb-2">Transaction History</h1>

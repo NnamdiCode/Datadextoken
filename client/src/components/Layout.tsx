@@ -29,7 +29,7 @@ export default function Layout({ children }: LayoutProps) {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900">
+    <div className="min-h-screen bg-black">
       {/* Navigation */}
       <nav className="fixed top-0 left-0 right-0 z-50 bg-white/5 backdrop-blur-lg border-b border-white/10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -40,10 +40,10 @@ export default function Layout({ children }: LayoutProps) {
                   className="flex items-center cursor-pointer"
                   whileHover={{ scale: 1.05 }}
                 >
-                  <h1 className="text-xl font-bold bg-gradient-to-r from-blue-400 via-purple-500 to-cyan-400 bg-clip-text text-transparent">
+                  <h1 className="text-xl font-bold text-primary">
                     DataSwap
                   </h1>
-                  <span className="ml-3 text-sm bg-blue-500/20 text-blue-400 px-2 py-1 rounded-full">
+                  <span className="ml-3 text-sm bg-primary/20 text-primary px-2 py-1 rounded-full">
                     Beta
                   </span>
                 </motion.div>
@@ -83,8 +83,9 @@ export default function Layout({ children }: LayoutProps) {
               <Button
                 variant="ghost"
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                icon={mobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
-              />
+              >
+                {mobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
+              </Button>
             </div>
           </div>
         </div>

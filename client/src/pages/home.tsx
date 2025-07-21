@@ -34,7 +34,7 @@ export default function Home() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
           >
-            <h1 className="text-5xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-blue-400 via-purple-500 to-cyan-400 bg-clip-text text-transparent">
+            <h1 className="text-5xl md:text-6xl font-bold mb-6 text-primary">
               Tokenize & Trade Your Data
             </h1>
             <p className="text-xl text-gray-300 mb-8 max-w-3xl mx-auto leading-relaxed">
@@ -238,7 +238,7 @@ export default function Home() {
       {/* CTA Section */}
       <section className="py-20 px-4 sm:px-6 lg:px-8">
         <div className="max-w-4xl mx-auto text-center">
-          <GlassCard className="p-12 bg-gradient-to-r from-blue-500/10 to-purple-500/10 border-blue-500/30">
+          <GlassCard className="p-12 bg-black/80 border-primary/30">
             <h2 className="text-3xl font-bold mb-6">Ready to Get Started?</h2>
             <p className="text-xl text-gray-300 mb-8">
               Join the decentralized data economy. Upload your first dataset and start earning.
