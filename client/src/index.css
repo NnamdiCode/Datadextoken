@@ -3,49 +3,49 @@
 @tailwind utilities;
 
 :root {
-  --background: hsl(0, 0%, 0%);
+  --background: hsl(0, 0%, 15%);
   --foreground: hsl(0, 0%, 98%);
-  --muted: hsl(0, 0%, 10%);
+  --muted: hsl(0, 0%, 25%);
   --muted-foreground: hsl(0, 0%, 65%);
-  --popover: hsl(0, 0%, 0%);
+  --popover: hsl(0, 0%, 15%);
   --popover-foreground: hsl(0, 0%, 98%);
-  --card: hsl(0, 0%, 0%);
+  --card: hsl(0, 0%, 15%);
   --card-foreground: hsl(0, 0%, 98%);
-  --border: hsl(0, 0%, 15%);
-  --input: hsl(0, 0%, 15%);
+  --border: hsl(0, 0%, 30%);
+  --input: hsl(0, 0%, 30%);
   --primary: hsl(174, 80%, 45%);
-  --primary-foreground: hsl(0, 0%, 0%);
-  --secondary: hsl(0, 0%, 10%);
+  --primary-foreground: hsl(0, 0%, 15%);
+  --secondary: hsl(0, 0%, 25%);
   --secondary-foreground: hsl(0, 0%, 98%);
   --accent: hsl(174, 80%, 45%);
-  --accent-foreground: hsl(0, 0%, 0%);
+  --accent-foreground: hsl(0, 0%, 15%);
   --destructive: hsl(0, 62.8%, 30.6%);
   --destructive-foreground: hsl(0, 0%, 98%);
   --ring: hsl(174, 80%, 45%);
   --radius: 0.5rem;
   
   /* Custom DataSwap colors */
-  --glass-bg: hsla(0, 0%, 5%, 0.8);
+  --glass-bg: hsla(0, 0%, 20%, 0.8);
   --glass-border: hsla(174, 80%, 45%, 0.2);
 }
 
 .dark {
-  --background: hsl(0, 0%, 0%);
+  --background: hsl(0, 0%, 15%);
   --foreground: hsl(0, 0%, 98%);
-  --muted: hsl(0, 0%, 10%);
+  --muted: hsl(0, 0%, 25%);
   --muted-foreground: hsl(0, 0%, 65%);
-  --popover: hsl(0, 0%, 0%);
+  --popover: hsl(0, 0%, 15%);
   --popover-foreground: hsl(0, 0%, 98%);
-  --card: hsl(0, 0%, 0%);
+  --card: hsl(0, 0%, 15%);
   --card-foreground: hsl(0, 0%, 98%);
-  --border: hsl(0, 0%, 15%);
-  --input: hsl(0, 0%, 15%);
+  --border: hsl(0, 0%, 30%);
+  --input: hsl(0, 0%, 30%);
   --primary: hsl(174, 80%, 45%);
-  --primary-foreground: hsl(0, 0%, 0%);
-  --secondary: hsl(0, 0%, 10%);
+  --primary-foreground: hsl(0, 0%, 15%);
+  --secondary: hsl(0, 0%, 25%);
   --secondary-foreground: hsl(0, 0%, 98%);
   --accent: hsl(174, 80%, 45%);
-  --accent-foreground: hsl(0, 0%, 0%);
+  --accent-foreground: hsl(0, 0%, 15%);
   --destructive: hsl(0, 62.8%, 30.6%);
   --destructive-foreground: hsl(0, 0%, 98%);
   --ring: hsl(174, 80%, 45%);

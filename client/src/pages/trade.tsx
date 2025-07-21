@@ -511,7 +511,7 @@ export default function Trade() {
             ))}
           </div>
           
-          <GlassCard className="p-6 bg-black/80 border-primary/30">
+          <GlassCard className="p-6 bg-card border-primary/30">
             <div className="flex items-center justify-between">
               <div>
                 <h3 className="text-lg font-medium mb-1">Ready to add your own data?</h3>

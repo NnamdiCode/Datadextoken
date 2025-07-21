@@ -238,7 +238,7 @@ export default function Home() {
       {/* CTA Section */}
       <section className="py-20 px-4 sm:px-6 lg:px-8">
         <div className="max-w-4xl mx-auto text-center">
-          <GlassCard className="p-12 bg-black/80 border-primary/30">
+          <GlassCard className="p-12 bg-card border-primary/30">
             <h2 className="text-3xl font-bold mb-6">Ready to Get Started?</h2>
             <p className="text-xl text-gray-300 mb-8">
               Join the decentralized data economy. Upload your first dataset and start earning.
