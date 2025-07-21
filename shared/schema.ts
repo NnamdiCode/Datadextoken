@@ -176,3 +176,35 @@ export interface WalletInfo {
   dataTokens: TokenContractInfo[];
   isConnected: boolean;
 }
+
+// Irys Transaction interface
+export interface IrysTransaction {
+  id: number;
+  hash: string;
+  fromAddress: string;
+  toAddress: string;
+  value: string;
+  gasUsed: string;
+  status: 'success' | 'failed' | 'pending';
+  timestamp: Date;
+  type: 'token_creation' | 'swap' | 'liquidity_add' | 'liquidity_remove' | 'transfer';
+  data?: any; // Additional transaction data
+  blockNumber?: number;
+  blockHash?: string;
+}
+
+export const insertIrysTransactionSchema = z.object({
+  hash: z.string(),
+  fromAddress: z.string(),
+  toAddress: z.string(),
+  value: z.string(),
+  gasUsed: z.string(),
+  status: z.enum(['success', 'failed', 'pending']),
+  timestamp: z.date(),
+  type: z.enum(['token_creation', 'swap', 'liquidity_add', 'liquidity_remove', 'transfer']),
+  data: z.any().optional(),
+  blockNumber: z.number().optional(),
+  blockHash: z.string().optional(),
+});
+
+export type InsertIrysTransaction = z.infer<typeof insertIrysTransactionSchema>;

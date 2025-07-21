@@ -99,7 +99,13 @@ export default function Trade() {
       traderAddress: string;
       slippage: number;
     }) => {
-      return apiRequest('POST', '/api/trade', tradeData);
+      return apiRequest('POST', '/api/irys/swap', {
+        tokenIn: tradeData.fromToken,
+        tokenOut: tradeData.toToken,
+        amountIn: tradeData.amountIn,
+        minAmountOut: (parseFloat(tradeData.amountOut) * 0.99).toString(), // 1% slippage tolerance
+        userAddress: tradeData.traderAddress,
+      });
     },
     onSuccess: () => {
       toast({ title: 'Trade executed successfully!' });

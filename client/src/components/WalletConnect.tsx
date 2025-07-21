@@ -2,11 +2,13 @@ import { useState, useEffect } from 'react';
 import { Wallet, ChevronDown, LogOut, Copy, ExternalLink, Coins, Database, AlertTriangle, Network } from 'lucide-react';
 import Button from './Button';
 import GlassCard from './GlassCard';
+import WalletSelector from './WalletSelector';
 import { useWallet } from '../hooks/useWallet';
 import { useToast } from '../hooks/use-toast';
 
 export default function WalletConnect() {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [isWalletSelectorOpen, setIsWalletSelectorOpen] = useState(false);
   const [irysBalance, setIrysBalance] = useState<string>('0');
   const [dataTokens, setDataTokens] = useState<any[]>([]);
   const { 
@@ -103,7 +105,7 @@ export default function WalletConnect() {
     return (
       <div className="flex flex-col items-end space-y-2">
         <Button
-          onClick={connect}
+          onClick={() => setIsWalletSelectorOpen(true)}
           disabled={isConnecting}
           icon={<Wallet size={16} />}
         >
@@ -255,6 +257,12 @@ export default function WalletConnect() {
           </div>
         </>
       )}
+
+      {/* Wallet Selector Modal */}
+      <WalletSelector 
+        isOpen={isWalletSelectorOpen} 
+        onClose={() => setIsWalletSelectorOpen(false)} 
+      />
     </div>
   );
 }

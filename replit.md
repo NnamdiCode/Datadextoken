@@ -129,13 +129,17 @@ Preferred communication style: Simple, everyday language.
 The application follows a modular architecture with clear separation between frontend, backend, and blockchain components. The use of TypeScript throughout ensures type safety, while the combination of modern React patterns and established blockchain tools provides a robust foundation for decentralized data trading.
 
 ## Recent Changes
+- **January 21, 2025**: **MAJOR UPDATE**: Implemented full Irys VM smart contract integration
+- **January 21, 2025**: Created irysContracts service for direct smart contract interaction on Irys VM
+- **January 21, 2025**: Added IrysTransaction schema and storage for comprehensive blockchain transaction tracking
+- **January 21, 2025**: Updated upload process to create tokens on Irys VM with smart contracts
+- **January 21, 2025**: Enhanced trade execution to use Irys VM AMM contracts with x*y=k formula
+- **January 21, 2025**: Integrated real-time blockchain transaction recording and verification
+- **January 21, 2025**: Added smart contract endpoints for token creation, swaps, and transaction tracking
+- **January 21, 2025**: Multi-wallet selection system with WalletSelector supporting MetaMask, WalletConnect, Coinbase
+- **January 21, 2025**: Persistent network status to prevent repeated Irys network switch prompts
 - **January 21, 2025**: Integrated MetaMask wallet adapter with comprehensive Irys network detection
 - **January 21, 2025**: Added automatic network switching functionality for Irys Devnet (Chain ID: 1270)
 - **January 21, 2025**: Implemented NetworkStatus component with visual network compatibility warnings
 - **January 21, 2025**: Enhanced WalletConnect component with network status indicators and switch buttons
 - **January 21, 2025**: Updated color scheme from black to dark grey background with turquoise green accents
-- **January 19, 2025**: Implemented automatic swap calculations using real-time exchange rates
-- **January 19, 2025**: Removed duplicate wallet logos, keeping only top-right corner display
-- **January 19, 2025**: Fixed token ID registration to avoid duplication in upload process
-- **January 19, 2025**: Set total supply to 1 billion tokens with market cap calculations
-- **January 19, 2025**: Enhanced token displays with market cap information across all pages

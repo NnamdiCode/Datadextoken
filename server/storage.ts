@@ -1,4 +1,4 @@
-import { type DataToken, type InsertDataToken, type Trade, type InsertTrade, type LiquidityPool, type InsertLiquidityPool, type User, type InsertUser } from "@shared/schema";
+import { type DataToken, type InsertDataToken, type Trade, type InsertTrade, type LiquidityPool, type InsertLiquidityPool, type User, type InsertUser, type IrysTransaction, type InsertIrysTransaction } from "@shared/schema";
 
 export interface IStorage {
   // Data Tokens
@@ -28,6 +28,13 @@ export interface IStorage {
   getUser(walletAddress: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
   updateUserStats(walletAddress: string, totalUploads?: number, totalTrades?: number, totalVolume?: number): Promise<void>;
+
+  // Irys Transactions
+  getIrysTransaction(hash: string): Promise<IrysTransaction | undefined>;
+  getIrysTransactionsByUser(userAddress: string, limit?: number): Promise<IrysTransaction[]>;
+  createIrysTransaction(transaction: InsertIrysTransaction): Promise<IrysTransaction>;
+  updateIrysTransactionStatus(hash: string, status: 'success' | 'failed' | 'pending', blockNumber?: number, blockHash?: string): Promise<void>;
+  getRecentIrysTransactions(limit?: number): Promise<IrysTransaction[]>;
 }
 
 export class MemStorage implements IStorage {
@@ -35,6 +42,7 @@ export class MemStorage implements IStorage {
   private trades: Map<number, Trade>;
   private liquidityPools: Map<string, LiquidityPool>;
   private users: Map<string, User>;
+  private irysTransactions: Map<string, IrysTransaction>; // Hash -> Transaction
   private currentId: number;
 
   constructor() {
@@ -42,6 +50,7 @@ export class MemStorage implements IStorage {
     this.trades = new Map();
     this.liquidityPools = new Map();
     this.users = new Map();
+    this.irysTransactions = new Map();
     this.currentId = 1;
     
     // Add sample data for testing
@@ -314,6 +323,42 @@ export class MemStorage implements IStorage {
       if (totalVolume !== undefined) user.totalVolume = totalVolume;
       this.users.set(walletAddress, user);
     }
+  }
+
+  // Irys Transactions
+  async getIrysTransaction(hash: string): Promise<IrysTransaction | undefined> {
+    return this.irysTransactions.get(hash);
+  }
+
+  async getIrysTransactionsByUser(userAddress: string, limit = 50): Promise<IrysTransaction[]> {
+    return Array.from(this.irysTransactions.values())
+      .filter(tx => tx.fromAddress.toLowerCase() === userAddress.toLowerCase() || tx.toAddress.toLowerCase() === userAddress.toLowerCase())
+      .sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime())
+      .slice(0, limit);
+  }
+
+  async createIrysTransaction(transaction: InsertIrysTransaction): Promise<IrysTransaction> {
+    const newTransaction: IrysTransaction = {
+      id: this.currentId++,
+      ...transaction,
+    };
+    this.irysTransactions.set(transaction.hash, newTransaction);
+    return newTransaction;
+  }
+
+  async updateIrysTransactionStatus(hash: string, status: 'success' | 'failed' | 'pending', blockNumber?: number, blockHash?: string): Promise<void> {
+    const transaction = this.irysTransactions.get(hash);
+    if (transaction) {
+      transaction.status = status;
+      if (blockNumber !== undefined) transaction.blockNumber = blockNumber;
+      if (blockHash !== undefined) transaction.blockHash = blockHash;
+    }
+  }
+
+  async getRecentIrysTransactions(limit = 20): Promise<IrysTransaction[]> {
+    return Array.from(this.irysTransactions.values())
+      .sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime())
+      .slice(0, limit);
   }
 }
 

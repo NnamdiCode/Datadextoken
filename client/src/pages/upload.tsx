@@ -80,17 +80,54 @@ export default function UploadPage() {
 
   const uploadMutation = useMutation({
     mutationFn: async (formData: FormData) => {
-      const response = await fetch('/api/upload', {
+      // First upload to Irys
+      const uploadResponse = await fetch('/api/upload', {
         method: 'POST',
         body: formData,
       });
       
-      if (!response.ok) {
-        const error = await response.json();
+      if (!uploadResponse.ok) {
+        const error = await uploadResponse.json();
         throw new Error(error.message || 'Upload failed');
       }
       
-      return response.json();
+      const uploadResult = await uploadResponse.json();
+      
+      // Then create token on Irys VM
+      const tokenResponse = await fetch('/api/irys/create-token', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name: uploadResult.token.name,
+          symbol: uploadResult.token.symbol,
+          dataHash: uploadResult.token.irysTransactionId,
+          metadata: JSON.stringify({
+            description: uploadResult.token.description,
+            category: uploadResult.token.category,
+            fileSize: uploadResult.token.fileSize,
+            fileType: uploadResult.token.fileType,
+            fileName: uploadResult.token.fileName,
+            imageUrl: uploadResult.token.imageUrl,
+          }),
+          creatorAddress: account,
+        }),
+      });
+      
+      if (!tokenResponse.ok) {
+        const error = await tokenResponse.json();
+        throw new Error(error.message || 'Token creation failed');
+      }
+      
+      const tokenResult = await tokenResponse.json();
+      
+      return {
+        ...uploadResult,
+        irysTransaction: tokenResult.irysTransaction,
+        tokenAddress: tokenResult.tokenAddress,
+        transactionHash: tokenResult.transactionHash,
+      };
     },
     onSuccess: (data) => {
       setTokenResult(data);
@@ -191,7 +228,7 @@ export default function UploadPage() {
     formData.append('description', description);
     formData.append('category', category);
     formData.append('creatorAddress', account);
-    formData.append('calculatedPrice', calculateTokenPrice());
+    formData.append('calculatedPrice', calculateTokenPrice().toString());
     
     uploadMutation.mutate(formData);
   };

@@ -1,14 +1,29 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { AlertTriangle, X, Network, CheckCircle } from 'lucide-react';
 import { useWallet } from '../hooks/useWallet';
 import Button from './Button';
 
+const NETWORK_POPUP_DISMISSED_KEY = 'dataswap_network_popup_dismissed';
+
 export default function NetworkStatus() {
-  const [isVisible, setIsVisible] = useState(true);
+  const [isVisible, setIsVisible] = useState(false);
   const { isConnected, isIrysNetwork, switchToIrys, chainId, networkError } = useWallet();
 
-  // Don't show if wallet not connected, already on Irys network, or user dismissed
-  if (!isConnected || isIrysNetwork || !isVisible || !chainId) {
+  useEffect(() => {
+    // Check if user has previously dismissed the popup
+    const isDismissed = localStorage.getItem(NETWORK_POPUP_DISMISSED_KEY) === 'true';
+    
+    // Only show if user is connected, not on Irys network, and hasn't dismissed before
+    setIsVisible(isConnected && !isIrysNetwork && !isDismissed && !!chainId);
+  }, [isConnected, isIrysNetwork, chainId]);
+
+  const handleDismiss = () => {
+    localStorage.setItem(NETWORK_POPUP_DISMISSED_KEY, 'true');
+    setIsVisible(false);
+  };
+
+  // Don't show if not visible based on conditions above
+  if (!isVisible) {
     return null;
   }
 
@@ -28,7 +43,7 @@ export default function NetworkStatus() {
   const handleSwitchNetwork = async () => {
     try {
       await switchToIrys();
-      setIsVisible(false); // Hide after successful switch
+      handleDismiss(); // Hide and remember dismissal after successful switch
     } catch (error) {
       console.error('Failed to switch network:', error);
     }
@@ -45,7 +60,7 @@ export default function NetworkStatus() {
                 Network Compatibility Notice
               </h3>
               <p className="text-xs text-yellow-200 mb-3">
-                You're connected to {getNetworkName(chainId)}. For full DataSwap functionality, please switch to Irys Network.
+                You're connected to {getNetworkName(chainId || '')}. For full DataSwap functionality, please switch to Irys Network.
               </p>
               <div className="flex space-x-2">
                 <Button
@@ -59,16 +74,16 @@ export default function NetworkStatus() {
                 <Button
                   size="sm"
                   variant="outline"
-                  onClick={() => setIsVisible(false)}
+                  onClick={handleDismiss}
                   className="border-yellow-500/30 text-yellow-400 hover:bg-yellow-500/10"
                 >
-                  Later
+                  Don't show again
                 </Button>
               </div>
             </div>
           </div>
           <button
-            onClick={() => setIsVisible(false)}
+            onClick={handleDismiss}
             className="text-yellow-400 hover:text-yellow-300 ml-2"
           >
             <X size={16} />

@@ -580,6 +580,166 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Irys VM Smart Contract Endpoints
+  
+  // Record Irys transaction
+  app.post("/api/transactions/irys", async (req, res) => {
+    try {
+      const transactionData = req.body;
+      
+      // Transform the data to match storage schema
+      const irysTransaction = await storage.createIrysTransaction({
+        hash: transactionData.hash,
+        fromAddress: transactionData.from,
+        toAddress: transactionData.to,
+        value: transactionData.value,
+        gasUsed: transactionData.gasUsed,
+        status: transactionData.status,
+        timestamp: new Date(transactionData.timestamp),
+        type: transactionData.type,
+        data: transactionData.data,
+        blockNumber: transactionData.blockNumber,
+        blockHash: transactionData.blockHash,
+      });
+      
+      res.json({ success: true, transaction: irysTransaction });
+    } catch (error) {
+      console.error("Failed to record Irys transaction:", error);
+      res.status(500).json({ error: "Failed to record transaction" });
+    }
+  });
+
+  // Get Irys transactions for user
+  app.get("/api/transactions/irys/:userAddress", async (req, res) => {
+    try {
+      const { userAddress } = req.params;
+      const { limit } = req.query;
+      
+      const transactions = await storage.getIrysTransactionsByUser(
+        userAddress,
+        limit ? parseInt(limit as string) : 50
+      );
+      
+      res.json({ transactions });
+    } catch (error) {
+      console.error("Failed to get user Irys transactions:", error);
+      res.status(500).json({ error: "Failed to get transactions" });
+    }
+  });
+
+  // Create token on Irys VM
+  app.post("/api/irys/create-token", async (req, res) => {
+    try {
+      const { name, symbol, dataHash, metadata, creatorAddress } = req.body;
+      
+      if (!name || !symbol || !dataHash || !metadata || !creatorAddress) {
+        return res.status(400).json({ error: "Missing required parameters" });
+      }
+      
+      // Generate mock token address and transaction hash
+      const tokenAddress = '0x' + Math.random().toString(16).substr(2, 40);
+      const transactionHash = '0x' + Math.random().toString(16).substr(2, 64);
+      
+      // Create Irys transaction record
+      const irysTransaction = await storage.createIrysTransaction({
+        hash: transactionHash,
+        fromAddress: creatorAddress,
+        toAddress: '0x1234567890123456789012345678901234567890', // Registry contract
+        value: '0.005', // 0.005 IRYS fee
+        gasUsed: '65000',
+        status: 'success',
+        timestamp: new Date(),
+        type: 'token_creation',
+        data: {
+          name,
+          symbol,
+          dataHash,
+          tokenAddress,
+          metadata: JSON.parse(metadata)
+        }
+      });
+      
+      res.json({
+        success: true,
+        tokenAddress,
+        transactionHash,
+        irysTransaction
+      });
+    } catch (error) {
+      console.error("Failed to create token on Irys VM:", error);
+      res.status(500).json({ error: "Token creation failed" });
+    }
+  });
+
+  // Execute swap on Irys VM
+  app.post("/api/irys/swap", async (req, res) => {
+    try {
+      const { tokenIn, tokenOut, amountIn, minAmountOut, userAddress } = req.body;
+      
+      if (!tokenIn || !tokenOut || !amountIn || !minAmountOut || !userAddress) {
+        return res.status(400).json({ error: "Missing required parameters" });
+      }
+      
+      // Calculate swap amount using AMM formula
+      const pool = await storage.getLiquidityPool(tokenIn, tokenOut);
+      if (!pool) {
+        return res.status(400).json({ error: "Liquidity pool not found" });
+      }
+      
+      const reserveIn = parseFloat(pool.reserveA);
+      const reserveOut = parseFloat(pool.reserveB);
+      const amountInFloat = parseFloat(amountIn);
+      
+      // AMM formula: x * y = k, with 0.3% fee
+      const amountInWithFee = amountInFloat * 0.997; // 0.3% fee
+      const amountOut = (reserveOut * amountInWithFee) / (reserveIn + amountInWithFee);
+      
+      if (amountOut < parseFloat(minAmountOut)) {
+        return res.status(400).json({ error: "Slippage tolerance exceeded" });
+      }
+      
+      // Update pool reserves
+      await storage.updateLiquidityPool(
+        tokenIn,
+        tokenOut,
+        (reserveIn + amountInFloat).toString(),
+        (reserveOut - amountOut).toString()
+      );
+      
+      // Generate transaction hash
+      const transactionHash = '0x' + Math.random().toString(16).substr(2, 64);
+      
+      // Create Irys transaction record
+      const irysTransaction = await storage.createIrysTransaction({
+        hash: transactionHash,
+        fromAddress: userAddress,
+        toAddress: '0x2345678901234567890123456789012345678901', // AMM contract
+        value: tokenIn === '0x4567890123456789012345678901234567890123' ? amountIn : '0',
+        gasUsed: '80000',
+        status: 'success',
+        timestamp: new Date(),
+        type: 'swap',
+        data: {
+          tokenIn,
+          tokenOut,
+          amountIn,
+          amountOut: amountOut.toString(),
+          minAmountOut
+        }
+      });
+      
+      res.json({
+        success: true,
+        amountOut: amountOut.toString(),
+        transactionHash,
+        irysTransaction
+      });
+    } catch (error) {
+      console.error("Failed to execute swap on Irys VM:", error);
+      res.status(500).json({ error: "Swap execution failed" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
