@@ -295,10 +295,10 @@ export default function Trade() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
         {/* Left column - Trade panel */}
         <div className="lg:col-span-1">
-          <GlassCard className="sticky top-24">
+          <GlassCard className="sticky top-24 h-fit">
             <div className="p-4 border-b border-white/10">
               <div className="flex space-x-2">
                 <button 
@@ -477,12 +477,12 @@ export default function Trade() {
               <GlassCard 
                 key={token.id} 
                 animateOnHover 
-                className="p-4"
+                className="p-4 h-full flex flex-col"
               >
-                <div className="flex justify-between items-center">
-                  <div>
-                    <div className="font-medium">{token.name}</div>
-                    <div className="flex items-center mt-1 space-x-2">
+                <div className="flex justify-between items-start mb-4 flex-grow">
+                  <div className="flex-1 min-w-0">
+                    <div className="font-medium truncate">{token.name}</div>
+                    <div className="flex items-center mt-2 space-x-2 flex-wrap">
                       <span className="text-xs font-medium text-blue-400 bg-blue-500/20 px-2 py-1 rounded-full">
                         {token.symbol}
                       </span>
@@ -491,7 +491,7 @@ export default function Trade() {
                       </span>
                     </div>
                   </div>
-                  <div className="text-right">
+                  <div className="text-right ml-4 flex-shrink-0">
                     <div className="font-medium">{(token.currentPrice || 0.005).toFixed(3)} IRYS</div>
                     <div className="text-xs text-gray-400">
                       Cap: {(((token.currentPrice || 0.005) * 1000000000) / 1000000).toFixed(1)}M
@@ -501,18 +501,20 @@ export default function Trade() {
                     </div>
                   </div>
                 </div>
-                <Button 
-                  variant="outline" 
-                  size="sm"
-                  className="w-full mt-3"
-                  onClick={() => {
-                    setFromToken(tokens[0]?.tokenAddress || '');
-                    setToToken(token.tokenAddress);
-                    setSelectedTab('swap');
-                  }}
-                >
-                  Trade
-                </Button>
+                <div className="mt-auto">
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    className="w-full"
+                    onClick={() => {
+                      setFromToken(tokens[0]?.tokenAddress || '');
+                      setToToken(token.tokenAddress);
+                      setSelectedTab('swap');
+                    }}
+                  >
+                    Trade
+                  </Button>
+                </div>
               </GlassCard>
             ))}
           </div>
