@@ -105,15 +105,38 @@ export default function WalletConnect() {
     return (
       <div className="flex flex-col items-end space-y-2">
         <Button
-          onClick={() => setIsWalletSelectorOpen(true)}
+          onClick={async () => {
+            // Check if MetaMask or any browser wallet is available
+            if (typeof window !== 'undefined' && window.ethereum) {
+              try {
+                await connect();
+              } catch (error: any) {
+                toast({ 
+                  title: 'Connection failed', 
+                  description: error.message,
+                  variant: 'destructive' 
+                });
+              }
+            } else {
+              // Show wallet selector if no extension detected
+              setIsWalletSelectorOpen(true);
+            }
+          }}
           disabled={isConnecting}
           icon={<Wallet size={16} />}
+          className="glossy-button"
+          style={{ color: 'rgb(64, 224, 208)' }}
         >
           {isConnecting ? 'Connecting...' : 'Connect Wallet'}
         </Button>
         {networkError && (
-          <div className="text-xs text-red-400 bg-red-400/10 px-2 py-1 rounded max-w-48 text-right">
+          <div className="text-xs text-red-400 bg-red-400/10 px-2 py-1 rounded max-w-48 text-right border border-red-400/20">
             {networkError}
+          </div>
+        )}
+        {typeof window !== 'undefined' && !window.ethereum && (
+          <div className="text-xs text-yellow-400 bg-yellow-400/10 px-2 py-1 rounded max-w-48 text-right border border-yellow-400/20">
+            No wallet extension detected. Please install MetaMask or another Web3 wallet.
           </div>
         )}
       </div>
