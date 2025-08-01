@@ -290,8 +290,8 @@ export default function Trade() {
     <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
       <div className="flex justify-between items-center mb-8">
         <div>
-          <h1 className="text-3xl font-bold mb-2">Trade Data Tokens</h1>
-          <p className="text-gray-300">Swap your data tokens using our automated market maker</p>
+          <h1 className="text-3xl font-bold mb-2 shiny-text sparkle-container">Trade Data Tokens</h1>
+          <p className="text-gray-300 gradient-text">Swap your data tokens using our automated market maker</p>
         </div>
       </div>
 

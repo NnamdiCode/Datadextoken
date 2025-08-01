@@ -103,6 +103,323 @@ input::-webkit-inner-spin-button {
   margin: 0;
 }
 
+/* Glossy and shiny animations */
+@keyframes shimmer {
+  0% {
+    background-position: -200px 0;
+  }
+  100% {
+    background-position: calc(200px + 100%) 0;
+  }
+}
+
+@keyframes glow {
+  0%, 100% {
+    box-shadow: 0 0 20px rgba(64, 224, 208, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 30px rgba(64, 224, 208, 0.6), 0 0 40px rgba(64, 224, 208, 0.4);
+  }
+}
+
+@keyframes pulse-glow {
+  0%, 100% {
+    box-shadow: 0 0 5px rgba(64, 224, 208, 0.5);
+  }
+  50% {
+    box-shadow: 0 0 20px rgba(64, 224, 208, 0.8), 0 0 30px rgba(64, 224, 208, 0.6);
+  }
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
+}
+
+@keyframes sparkle {
+  0%, 100% {
+    opacity: 0;
+    transform: scale(0);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes gradient-shift {
+  0%, 100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+/* Enhanced glossy glass morphism effects */
+.glass-card-enhanced {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.15), rgba(255, 255, 255, 0.05));
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  position: relative;
+  overflow: hidden;
+}
+
+.glass-card-enhanced::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.2),
+    transparent
+  );
+  animation: shimmer 3s infinite;
+}
+
+.glossy-button {
+  background: linear-gradient(135deg, hsl(174, 80%, 50%), hsl(174, 80%, 40%));
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.glossy-button::before {
+  content: '';
+  position: absolute;
+  top: -2px;
+  left: -2px;
+  right: -2px;
+  bottom: -2px;
+  background: linear-gradient(45deg, hsl(174, 80%, 60%), hsl(174, 80%, 30%));
+  border-radius: inherit;
+  z-index: -1;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.glossy-button:hover::before {
+  opacity: 1;
+}
+
+.glossy-button::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.4),
+    transparent
+  );
+  transition: left 0.5s ease;
+}
+
+.glossy-button:hover::after {
+  left: 100%;
+}
+
+.shiny-text {
+  background: linear-gradient(
+    90deg,
+    hsl(174, 80%, 45%),
+    hsl(174, 90%, 65%),
+    hsl(174, 80%, 45%)
+  );
+  background-size: 200% 100%;
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: shimmer 2s infinite;
+}
+
+.floating-card {
+  animation: float 6s ease-in-out infinite;
+}
+
+.glow-border {
+  animation: glow 2s ease-in-out infinite alternate;
+}
+
+.pulse-glow {
+  animation: pulse-glow 1.5s ease-in-out infinite;
+}
+
+/* Sparkle effects */
+.sparkle-container {
+  position: relative;
+}
+
+.sparkle-container::before,
+.sparkle-container::after {
+  content: '✨';
+  position: absolute;
+  font-size: 12px;
+  animation: sparkle 2s infinite;
+  pointer-events: none;
+}
+
+.sparkle-container::before {
+  top: 10%;
+  right: 10%;
+  animation-delay: 0s;
+}
+
+.sparkle-container::after {
+  bottom: 10%;
+  left: 10%;
+  animation-delay: 1s;
+}
+
+/* Enhanced glass effects for inputs */
+.glass-input {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(64, 224, 208, 0.3);
+  transition: all 0.3s ease;
+}
+
+.glass-input:focus {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(64, 224, 208, 0.8);
+  box-shadow: 0 0 20px rgba(64, 224, 208, 0.3);
+}
+
+/* Gradient text effects */
+.gradient-text {
+  background: linear-gradient(45deg, #40e0d0, #00bcd4, #20b2aa);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-size: 300% 300%;
+  animation: gradient-shift 3s ease infinite;
+}
+
+/* Enhanced background effects */
+body::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: 
+    radial-gradient(circle at 20% 80%, rgba(64, 224, 208, 0.1) 0%, transparent 50%),
+    radial-gradient(circle at 80% 20%, rgba(64, 224, 208, 0.15) 0%, transparent 50%),
+    radial-gradient(circle at 40% 40%, rgba(64, 224, 208, 0.1) 0%, transparent 50%);
+  pointer-events: none;
+  z-index: -1;
+}
+
+/* Glowing orbs animation */
+@keyframes orb-float {
+  0%, 100% {
+    transform: translate(0, 0) scale(1);
+  }
+  33% {
+    transform: translate(30px, -30px) scale(1.1);
+  }
+  66% {
+    transform: translate(-20px, 20px) scale(0.9);
+  }
+}
+
+.floating-orb {
+  position: absolute;
+  border-radius: 50%;
+  background: radial-gradient(circle at 30% 30%, rgba(64, 224, 208, 0.8), rgba(64, 224, 208, 0.1));
+  animation: orb-float 8s ease-in-out infinite;
+  filter: blur(1px);
+}
+
+.floating-orb:nth-child(1) {
+  width: 100px;
+  height: 100px;
+  top: 10%;
+  left: 10%;
+  animation-delay: -2s;
+}
+
+.floating-orb:nth-child(2) {
+  width: 150px;
+  height: 150px;
+  top: 60%;
+  right: 10%;
+  animation-delay: -5s;
+}
+
+.floating-orb:nth-child(3) {
+  width: 80px;
+  height: 80px;
+  bottom: 20%;
+  left: 60%;
+  animation-delay: -1s;
+}
+
+/* Metallic shine effect */
+.metallic-shine {
+  background: linear-gradient(135deg, 
+    #40e0d0 0%,
+    #87ceeb 25%,
+    #40e0d0 50%,
+    #20b2aa 75%,
+    #40e0d0 100%);
+  background-size: 400% 400%;
+  animation: metallic-flow 4s ease-in-out infinite;
+}
+
+@keyframes metallic-flow {
+  0%, 100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+/* Enhanced hover effects */
+.enhanced-hover {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.enhanced-hover:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 40px rgba(64, 224, 208, 0.3);
+}
+
+/* Cosmic dust animation */
+@keyframes cosmic-dust {
+  0% {
+    opacity: 0;
+    transform: rotate(0deg) translate(-50px) rotate(0deg);
+  }
+  100% {
+    opacity: 1;
+    transform: rotate(360deg) translate(-50px) rotate(-360deg);
+  }
+}
+
+.cosmic-effect::before {
+  content: '';
+  position: absolute;
+  width: 2px;
+  height: 2px;
+  background: #40e0d0;
+  border-radius: 50%;
+  animation: cosmic-dust 20s linear infinite;
+}
+
 input[type=number] {
   -moz-appearance: textfield;
 }

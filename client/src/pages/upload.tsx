@@ -739,7 +739,7 @@ export default function UploadPage() {
             className="w-full max-w-md"
           >
             <GlassCard className="p-6">
-              <h3 className="text-xl font-medium mb-4">Confirm Upload & Tokenization</h3>
+              <h3 className="text-xl font-medium mb-4 shiny-text">Confirm Upload & Tokenization</h3>
               
               <div className="space-y-4 mb-6">
                 

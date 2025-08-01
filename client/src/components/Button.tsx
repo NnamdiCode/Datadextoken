@@ -27,8 +27,8 @@ export default function Button({
   const baseClasses = "inline-flex items-center justify-center font-medium transition-all duration-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 disabled:opacity-50 disabled:cursor-not-allowed";
   
   const variants = {
-    default: "bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg hover:shadow-primary/25",
-    outline: "border border-white/20 text-white hover:bg-white/10 hover:border-white/30",
+    default: "bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg hover:shadow-primary/25 glossy-button pulse-glow",
+    outline: "border border-white/20 text-white hover:bg-white/10 hover:border-white/30 glow-border",
     ghost: "text-white hover:bg-white/10",
   };
   

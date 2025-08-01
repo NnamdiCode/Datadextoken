@@ -25,30 +25,35 @@ export default function Home() {
   });
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen relative">
+      {/* Floating orbs for visual enhancement */}
+      <div className="floating-orb"></div>
+      <div className="floating-orb"></div>
+      <div className="floating-orb"></div>
+      
       {/* Hero Section */}
-      <section className="py-20 px-4 sm:px-6 lg:px-8">
+      <section className="py-20 px-4 sm:px-6 lg:px-8 relative">
         <div className="max-w-7xl mx-auto text-center">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
           >
-            <h1 className="text-5xl md:text-6xl font-bold mb-6 text-primary">
+            <h1 className="text-5xl md:text-6xl font-bold mb-6 shiny-text sparkle-container">
               Tokenize & Trade Your Data
             </h1>
-            <p className="text-xl text-gray-300 mb-8 max-w-3xl mx-auto leading-relaxed">
+            <p className="text-xl text-gray-300 mb-8 max-w-3xl mx-auto leading-relaxed gradient-text">
               Upload your data to the Irys blockchain, receive unique tokens, and trade them on our decentralized exchange. 
               Turn your data into liquid assets.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link href="/upload">
-                <Button size="lg" icon={<Upload size={20} />}>
+                <Button size="lg" icon={<Upload size={20} />} className="glossy-button pulse-glow">
                   Upload Data
                 </Button>
               </Link>
               <Link href="/trade">
-                <Button variant="outline" size="lg" icon={<TrendingUp size={20} />}>
+                <Button variant="outline" size="lg" icon={<TrendingUp size={20} />} className="glossy-button glow-border">
                   Start Trading
                 </Button>
               </Link>
@@ -61,7 +66,7 @@ export default function Home() {
       <section className="py-16 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold mb-4">Why Choose DataSwap?</h2>
+            <h2 className="text-3xl font-bold mb-4 shiny-text">Why Choose DataSwap?</h2>
             <p className="text-gray-300 max-w-2xl mx-auto">
               Built on Irys blockchain for fast, secure, and cost-effective data tokenization
             </p>
@@ -72,7 +77,7 @@ export default function Home() {
               <div className="w-12 h-12 bg-blue-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
                 <Zap className="text-blue-400" size={24} />
               </div>
-              <h3 className="text-xl font-semibold mb-2">Lightning Fast</h3>
+              <h3 className="text-xl font-semibold mb-2 gradient-text">Lightning Fast</h3>
               <p className="text-gray-300">
                 100,000 TPS on Irys blockchain - 6,000x faster than traditional storage solutions
               </p>
@@ -82,7 +87,7 @@ export default function Home() {
               <div className="w-12 h-12 bg-purple-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
                 <Shield className="text-purple-400" size={24} />
               </div>
-              <h3 className="text-xl font-semibold mb-2">Secure & Decentralized</h3>
+              <h3 className="text-xl font-semibold mb-2 gradient-text">Secure & Decentralized</h3>
               <p className="text-gray-300">
                 Your data is cryptographically secured and permanently stored on the blockchain
               </p>
@@ -92,7 +97,7 @@ export default function Home() {
               <div className="w-12 h-12 bg-green-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
                 <Globe className="text-green-400" size={24} />
               </div>
-              <h3 className="text-xl font-semibold mb-2">Global Marketplace</h3>
+              <h3 className="text-xl font-semibold mb-2 gradient-text">Global Marketplace</h3>
               <p className="text-gray-300">
                 Trade your data tokens with users worldwide through our automated market maker
               </p>
@@ -105,7 +110,7 @@ export default function Home() {
       <section className="py-16 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
           <div className="flex justify-between items-center mb-8">
-            <h2 className="text-2xl font-bold">Recently Tokenized Data</h2>
+            <h2 className="text-2xl font-bold shiny-text">Recently Tokenized Data</h2>
             <Link href="/trade">
               <Button variant="outline" size="sm" icon={<ArrowRight size={16} />}>
                 View All

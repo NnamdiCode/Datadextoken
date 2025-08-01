@@ -11,7 +11,7 @@ export default function GlassCard({ children, className, animateOnHover = false 
   const cardContent = (
     <div 
       className={cn(
-        "bg-white/5 backdrop-blur-lg border border-white/10 rounded-xl",
+        "bg-white/5 backdrop-blur-lg border border-white/10 rounded-xl floating-card glass-card-enhanced",
         className
       )}
     >
