@@ -129,12 +129,13 @@ Preferred communication style: Simple, everyday language.
 The application follows a modular architecture with clear separation between frontend, backend, and blockchain components. The use of TypeScript throughout ensures type safety, while the combination of modern React patterns and established blockchain tools provides a robust foundation for decentralized data trading.
 
 ## Recent Changes
-- **January 21, 2025**: **MAJOR UPDATE**: Implemented comprehensive glossy animations and visual enhancements
-- **January 21, 2025**: Added shimmer, glow, floating, sparkle, and gradient-shift animations throughout UI
+- **January 21, 2025**: **MAJOR UPDATE**: Refined visual effects to focus on glassy aesthetics only
+- **January 21, 2025**: Removed glow, pulse-glow, and sparkle effects per user request
+- **January 21, 2025**: Maintained shimmer, floating, and gradient-shift animations for elegant glass effects
 - **January 21, 2025**: Enhanced glass morphism effects with advanced backdrop filters and shine animations
 - **January 21, 2025**: Integrated shiny text effects with gradient animations on all major headings
 - **January 21, 2025**: Added floating orb animations and cosmic dust effects for enhanced visual appeal
-- **January 21, 2025**: Updated button components with glossy effects and pulse glow animations
+- **January 21, 2025**: Updated button components with clean glossy effects (removed glow animations)
 - **January 21, 2025**: **MAJOR UPDATE**: Implemented full Irys VM smart contract integration
 - **January 21, 2025**: Created irysContracts service for direct smart contract interaction on Irys VM
 - **January 21, 2025**: Added IrysTransaction schema and storage for comprehensive blockchain transaction tracking

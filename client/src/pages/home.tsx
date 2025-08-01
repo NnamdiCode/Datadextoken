@@ -39,7 +39,7 @@ export default function Home() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
           >
-            <h1 className="text-5xl md:text-6xl font-bold mb-6 shiny-text sparkle-container">
+            <h1 className="text-5xl md:text-6xl font-bold mb-6 shiny-text">
               Tokenize & Trade Your Data
             </h1>
             <p className="text-xl text-gray-300 mb-8 max-w-3xl mx-auto leading-relaxed gradient-text">
@@ -48,12 +48,12 @@ export default function Home() {
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link href="/upload">
-                <Button size="lg" icon={<Upload size={20} />} className="glossy-button pulse-glow">
+                <Button size="lg" icon={<Upload size={20} />} className="glossy-button">
                   Upload Data
                 </Button>
               </Link>
               <Link href="/trade">
-                <Button variant="outline" size="lg" icon={<TrendingUp size={20} />} className="glossy-button glow-border">
+                <Button variant="outline" size="lg" icon={<TrendingUp size={20} />} className="glossy-button">
                   Start Trading
                 </Button>
               </Link>

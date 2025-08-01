@@ -113,23 +113,7 @@ input::-webkit-inner-spin-button {
   }
 }
 
-@keyframes glow {
-  0%, 100% {
-    box-shadow: 0 0 20px rgba(64, 224, 208, 0.3);
-  }
-  50% {
-    box-shadow: 0 0 30px rgba(64, 224, 208, 0.6), 0 0 40px rgba(64, 224, 208, 0.4);
-  }
-}
-
-@keyframes pulse-glow {
-  0%, 100% {
-    box-shadow: 0 0 5px rgba(64, 224, 208, 0.5);
-  }
-  50% {
-    box-shadow: 0 0 20px rgba(64, 224, 208, 0.8), 0 0 30px rgba(64, 224, 208, 0.6);
-  }
-}
+/* Removed glow and pulse-glow animations as requested */
 
 @keyframes float {
   0%, 100% {
@@ -140,16 +124,7 @@ input::-webkit-inner-spin-button {
   }
 }
 
-@keyframes sparkle {
-  0%, 100% {
-    opacity: 0;
-    transform: scale(0);
-  }
-  50% {
-    opacity: 1;
-    transform: scale(1);
-  }
-}
+/* Removed sparkle animation as requested */
 
 @keyframes gradient-shift {
   0%, 100% {
@@ -248,39 +223,7 @@ input::-webkit-inner-spin-button {
   animation: float 6s ease-in-out infinite;
 }
 
-.glow-border {
-  animation: glow 2s ease-in-out infinite alternate;
-}
-
-.pulse-glow {
-  animation: pulse-glow 1.5s ease-in-out infinite;
-}
-
-/* Sparkle effects */
-.sparkle-container {
-  position: relative;
-}
-
-.sparkle-container::before,
-.sparkle-container::after {
-  content: '✨';
-  position: absolute;
-  font-size: 12px;
-  animation: sparkle 2s infinite;
-  pointer-events: none;
-}
-
-.sparkle-container::before {
-  top: 10%;
-  right: 10%;
-  animation-delay: 0s;
-}
-
-.sparkle-container::after {
-  bottom: 10%;
-  left: 10%;
-  animation-delay: 1s;
-}
+/* Removed glow-border, pulse-glow, and sparkle effects as requested */
 
 /* Enhanced glass effects for inputs */
 .glass-input {
@@ -293,7 +236,6 @@ input::-webkit-inner-spin-button {
 .glass-input:focus {
   background: rgba(255, 255, 255, 0.1);
   border-color: rgba(64, 224, 208, 0.8);
-  box-shadow: 0 0 20px rgba(64, 224, 208, 0.3);
 }
 
 /* Gradient text effects */
@@ -395,7 +337,6 @@ body::before {
 
 .enhanced-hover:hover {
   transform: translateY(-2px);
-  box-shadow: 0 10px 40px rgba(64, 224, 208, 0.3);
 }
 
 /* Cosmic dust animation */
