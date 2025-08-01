@@ -105,27 +105,13 @@ export default function WalletConnect() {
     return (
       <div className="flex flex-col items-end space-y-2">
         <Button
-          onClick={async () => {
-            // Check if MetaMask or any browser wallet is available
-            if (typeof window !== 'undefined' && window.ethereum) {
-              try {
-                await connect();
-              } catch (error: any) {
-                toast({ 
-                  title: 'Connection failed', 
-                  description: error.message,
-                  variant: 'destructive' 
-                });
-              }
-            } else {
-              // Show wallet selector if no extension detected
-              setIsWalletSelectorOpen(true);
-            }
+          onClick={() => {
+            // Always show wallet selector to let user choose their preferred EVM wallet
+            setIsWalletSelectorOpen(true);
           }}
           disabled={isConnecting}
           icon={<Wallet size={16} />}
           className="glossy-button"
-          style={{ color: 'rgb(64, 224, 208)' }}
         >
           {isConnecting ? 'Connecting...' : 'Connect Wallet'}
         </Button>

@@ -77,99 +77,82 @@ export default function Trade() {
       if (!fromToken || !toToken || !fromAmount || parseFloat(fromAmount) === 0) {
         return null;
       }
-      const params = new URLSearchParams({
-        fromToken: fromToken,
-        toToken: toToken,
-        amount: fromAmount,
-      });
-      const response = await fetch(`/api/trade/quote?${params}`);
+      const response = await fetch(`/api/trade/quote?fromToken=${fromToken}&toToken=${toToken}&amountIn=${fromAmount}`);
       if (!response.ok) throw new Error('Failed to get quote');
       return response.json();
     },
     enabled: !!(fromToken && toToken && fromAmount && parseFloat(fromAmount) > 0),
   });
 
-  // Execute trade mutation
+  // Execute trade
   const tradeMutation = useMutation({
-    mutationFn: async (tradeData: {
-      fromToken: string;
-      toToken: string;
-      amountIn: string;
-      amountOut: string;
-      traderAddress: string;
-      slippage: number;
-    }) => {
-      return apiRequest('POST', '/api/irys/swap', {
-        tokenIn: tradeData.fromToken,
-        tokenOut: tradeData.toToken,
-        amountIn: tradeData.amountIn,
-        minAmountOut: (parseFloat(tradeData.amountOut) * 0.99).toString(), // 1% slippage tolerance
-        userAddress: tradeData.traderAddress,
+    mutationFn: async (tradeData: any) => {
+      return apiRequest('/api/irys/swap', {
+        method: 'POST',
+        body: JSON.stringify(tradeData),
       });
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       toast({ title: 'Trade executed successfully!' });
+      queryClient.invalidateQueries({ queryKey: ['/api/tokens'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/trades'] });
       setFromAmount('');
       setToAmount('');
-      setFromToken('');
-      setToToken('');
-      queryClient.invalidateQueries({ queryKey: ['/api/trades'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/tokens'] });
     },
     onError: (error: any) => {
-      toast({ 
-        title: 'Trade failed', 
-        description: error.message || 'Unknown error occurred',
-        variant: 'destructive'
+      toast({
+        title: 'Trade failed',
+        description: error.message,
+        variant: 'destructive',
       });
     },
   });
 
-  // Calculate automatic swap amounts using simple exchange rate
+  // Update to amount when quote changes
   useEffect(() => {
-    if (fromToken && toToken && fromAmount && parseFloat(fromAmount) > 0) {
-      const fromTokenData = tokens.find((t: any) => t.tokenAddress === fromToken);
-      const toTokenData = tokens.find((t: any) => t.tokenAddress === toToken);
-      
-      if (fromTokenData && toTokenData) {
-        // Simple exchange rate calculation: (fromPrice / toPrice) * fromAmount
-        const fromPrice = fromTokenData.currentPrice || 0.005;
-        const toPrice = toTokenData.currentPrice || 0.005;
-        const exchangeRate = fromPrice / toPrice;
-        const calculatedToAmount = parseFloat(fromAmount) * exchangeRate;
-        
-        // Apply 0.3% trading fee
-        const afterFee = calculatedToAmount * 0.997;
-        setToAmount(afterFee.toFixed(6));
+    if (quoteData?.quote?.amountOut) {
+      setToAmount(quoteData.quote.amountOut);
+    }
+  }, [quoteData]);
+
+  // Filter tokens for modal
+  const filteredTokens = tokens.filter((token: any) =>
+    token.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    token.symbol.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  const handleTokenSelect = (token: any, type: 'from' | 'to') => {
+    if (type === 'from') {
+      setFromToken(token.tokenAddress);
+      if (token.tokenAddress === toToken) {
+        setToToken('');
       }
     } else {
-      setToAmount('');
+      setToToken(token.tokenAddress);
+      if (token.tokenAddress === fromToken) {
+        setFromToken('');
+      }
     }
-  }, [fromToken, toToken, fromAmount, tokens]);
+    setShowTokenList(null);
+    setSearchQuery('');
+  };
 
-  const filteredTokens = tokens.filter((token: any) => {
-    if (!searchQuery) return true;
-    
-    const query = searchQuery.toLowerCase();
-    const tokenName = token?.name?.toLowerCase() || '';
-    const tokenSymbol = token?.symbol?.toLowerCase() || '';
-    
-    return tokenName.includes(query) || tokenSymbol.includes(query);
-  });
+  const getTokenByAddress = (address: string) => {
+    return tokens.find((token: any) => token.tokenAddress === address);
+  };
 
-  const handleSwapTokens = () => {
-    const temp = fromToken;
-    setFromToken(toToken);
-    setToToken(temp);
-    
+  const swapTokens = () => {
+    const tempToken = fromToken;
     const tempAmount = fromAmount;
+    setFromToken(toToken);
+    setToToken(tempToken);
     setFromAmount(toAmount);
     setToAmount(tempAmount);
   };
 
   const handleTrade = async () => {
-    if (!isConnected || !account) {
-      toast({ title: 'Please connect your wallet first', variant: 'destructive' });
+    if (!account) {
+      toast({ title: 'Please connect your wallet', variant: 'destructive' });
       return;
     }
 
@@ -332,7 +315,7 @@ export default function Trade() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
         {/* Left column - Trade panel */}
         <div className="lg:col-span-1">
           <GlassCard className="sticky top-24 h-fit">
@@ -354,64 +337,96 @@ export default function Trade() {
             </div>
             
             <div className="p-6">
+              {/* From token input */}
               <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-300 mb-2">
-                  From
-                </label>
-                <div className="relative">
-                  <input
-                    type="number"
-                    className="w-full bg-white/5 border border-white/10 rounded-md px-4 py-3 pr-24 focus:outline-none focus:ring-2 focus:ring-primary/50 text-white"
-                    placeholder="0.0"
-                    value={fromAmount}
-                    onChange={(e) => setFromAmount(e.target.value)}
-                  />
-                  <button
-                    className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-white/10 hover:bg-white/20 rounded-md px-3 py-1 flex items-center transition-colors"
-                    onClick={() => setShowTokenList('from')}
-                  >
-                    <span className="mr-1 text-white truncate max-w-16">
-                      {fromToken ? tokens.find((t: any) => t.tokenAddress === fromToken)?.symbol || 'Unknown' : 'Select'}
-                    </span>
-                    <ChevronDown size={16} />
-                  </button>
+                <label className="block text-sm font-medium mb-2 text-gray-300">From</label>
+                <div className="bg-white/5 border border-white/10 rounded-lg p-4">
+                  <div className="flex justify-between items-center mb-3">
+                    <button
+                      onClick={() => setShowTokenList('from')}
+                      className="flex items-center space-x-2 bg-white/10 hover:bg-white/20 rounded-md px-3 py-2 transition-colors"
+                    >
+                      {fromToken ? (
+                        <>
+                          <div className="w-6 h-6 rounded-full bg-blue-500/20 flex items-center justify-center">
+                            <span className="text-blue-400 text-xs font-bold">
+                              {getTokenByAddress(fromToken)?.symbol?.substring(0, 1) || 'T'}
+                            </span>
+                          </div>
+                          <span className="font-medium">{getTokenByAddress(fromToken)?.symbol || 'Select'}</span>
+                        </>
+                      ) : (
+                        <span className="text-gray-400">Select token</span>
+                      )}
+                      <ChevronDown size={16} />
+                    </button>
+                    <input
+                      type="number"
+                      className="bg-transparent text-right text-lg font-medium text-white placeholder-gray-500 outline-none flex-1 ml-4"
+                      placeholder="0.00"
+                      value={fromAmount}
+                      onChange={(e) => setFromAmount(e.target.value)}
+                    />
+                  </div>
+                  {fromToken && (
+                    <div className="text-xs text-gray-400">
+                      Price: {(getTokenByAddress(fromToken)?.currentPrice || 0).toFixed(6)} IRYS
+                    </div>
+                  )}
                 </div>
               </div>
-              
+
+              {/* Swap button */}
               <div className="flex justify-center my-4">
                 <button
-                  className="p-2 bg-white/5 hover:bg-white/10 rounded-full transition-colors"
-                  onClick={handleSwapTokens}
+                  onClick={swapTokens}
+                  className="p-2 bg-white/10 hover:bg-white/20 rounded-full transition-colors"
                 >
-                  <ArrowDownUp size={16} />
+                  <ArrowDownUp size={20} className="text-gray-300" />
                 </button>
               </div>
-              
+
+              {/* To token input */}
               <div className="mb-6">
-                <label className="block text-sm font-medium text-gray-300 mb-2">
-                  To
-                </label>
-                <div className="relative">
-                  <input
-                    type="number"
-                    className="w-full bg-white/5 border border-white/10 rounded-md px-4 py-3 pr-24 focus:outline-none focus:ring-2 focus:ring-primary/50 text-white"
-                    placeholder="0.0"
-                    value={toAmount}
-                    readOnly
-                  />
-                  <button
-                    className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-white/10 hover:bg-white/20 rounded-md px-3 py-1 flex items-center transition-colors"
-                    onClick={() => setShowTokenList('to')}
-                  >
-                    <span className="mr-1 text-white truncate max-w-16">
-                      {toToken ? tokens.find((t: any) => t.tokenAddress === toToken)?.symbol || 'Unknown' : 'Select'}
-                    </span>
-                    <ChevronDown size={16} />
-                  </button>
+                <label className="block text-sm font-medium mb-2 text-gray-300">To</label>
+                <div className="bg-white/5 border border-white/10 rounded-lg p-4">
+                  <div className="flex justify-between items-center mb-3">
+                    <button
+                      onClick={() => setShowTokenList('to')}
+                      className="flex items-center space-x-2 bg-white/10 hover:bg-white/20 rounded-md px-3 py-2 transition-colors"
+                    >
+                      {toToken ? (
+                        <>
+                          <div className="w-6 h-6 rounded-full bg-blue-500/20 flex items-center justify-center">
+                            <span className="text-blue-400 text-xs font-bold">
+                              {getTokenByAddress(toToken)?.symbol?.substring(0, 1) || 'T'}
+                            </span>
+                          </div>
+                          <span className="font-medium">{getTokenByAddress(toToken)?.symbol || 'Select'}</span>
+                        </>
+                      ) : (
+                        <span className="text-gray-400">Select token</span>
+                      )}
+                      <ChevronDown size={16} />
+                    </button>
+                    <input
+                      type="number"
+                      className="bg-transparent text-right text-lg font-medium text-white placeholder-gray-500 outline-none flex-1 ml-4"
+                      placeholder="0.00"
+                      value={toAmount}
+                      readOnly
+                    />
+                  </div>
+                  {toToken && (
+                    <div className="text-xs text-gray-400">
+                      Price: {(getTokenByAddress(toToken)?.currentPrice || 0).toFixed(6)} IRYS
+                    </div>
+                  )}
                 </div>
               </div>
-              
-              {fromToken && toToken && fromAmount && toAmount && (
+
+              {/* Trade summary */}
+              {quoteData?.quote && fromAmount && toAmount && (
                 <div className="mb-6 px-3 py-2 bg-white/5 rounded-md text-sm">
                   <div className="flex justify-between text-gray-400">
                     <span>Exchange Rate</span>
@@ -453,10 +468,10 @@ export default function Trade() {
           </GlassCard>
         </div>
         
-        {/* Right column - Chart and tokens */}
-        <div className="lg:col-span-2">
+        {/* Right column - Chart */}
+        <div className="lg:col-span-1">
           <div className="mb-6">
-            <GlassCard className="p-6">
+            <GlassCard className="p-6 h-fit">
               <div className="flex justify-between items-center mb-4">
                 <div>
                   <h2 className="text-xl font-medium text-white">Price Chart</h2>
@@ -510,15 +525,20 @@ export default function Trade() {
               </div>
             </GlassCard>
           </div>
+        </div>
+      </div>
+      
+      {/* Full width tokens section */}
+      <div className="mt-12">
+        <h3 className="text-lg font-medium mb-4 text-white">Available Tokens</h3>
           
-          <h3 className="text-lg font-medium mb-4 text-white">Available Tokens</h3>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
-            {tokensLoading ? (
-              <div className="col-span-2 text-center py-12 text-gray-400">Loading tokens...</div>
-            ) : tokens.length === 0 ? (
-              <div className="col-span-2 text-center py-12 text-gray-400">No tokens available</div>
-            ) : tokens.slice(0, 4).map((token: any) => (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+          {tokensLoading ? (
+            <div className="col-span-2 text-center py-12 text-gray-400">Loading tokens...</div>
+          ) : tokens.length === 0 ? (
+            <div className="col-span-2 text-center py-12 text-gray-400">No tokens available</div>
+          ) : (
+            tokens.map((token: any) => (
               <GlassCard 
                 key={token.id} 
                 animateOnHover 
@@ -561,26 +581,26 @@ export default function Trade() {
                   </Button>
                 </div>
               </GlassCard>
-            ))}
-          </div>
-          
-          <GlassCard className="p-6 bg-card border-primary/30">
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="text-lg font-medium mb-1">Ready to add your own data?</h3>
-                <p className="text-gray-300 text-sm">
-                  Upload your data, mint tokens, and start trading in minutes.
-                </p>
-              </div>
-              <Button 
-                onClick={() => window.location.href = '/upload'}
-                icon={<ArrowRight size={16} />}
-              >
-                Upload Data
-              </Button>
-            </div>
-          </GlassCard>
+            ))
+          )}
         </div>
+          
+        <GlassCard className="p-6 bg-card border-primary/30">
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="text-lg font-medium mb-1">Ready to add your own data?</h3>
+              <p className="text-gray-300 text-sm">
+                Upload your data, mint tokens, and start trading in minutes.
+              </p>
+            </div>
+            <Button 
+              onClick={() => window.location.href = '/upload'}
+              icon={<ArrowRight size={16} />}
+            >
+              Upload Data
+            </Button>
+          </div>
+        </GlassCard>
       </div>
       
       {/* Token selection modal */}
@@ -619,7 +639,7 @@ export default function Trade() {
                 {filteredTokens.map((token: any) => (
                   <button
                     key={token.id}
-                    className="w-full p-4 hover:bg-white/5 flex items-center justify-between border-b border-white/5 transition-colors"
+                    className="w-full flex items-center justify-between p-4 hover:bg-white/5 transition-colors text-left"
                     onClick={() => {
                       if (showTokenList === 'from') {
                         if (token.tokenAddress === toToken) {
