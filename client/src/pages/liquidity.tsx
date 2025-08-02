@@ -33,19 +33,7 @@ export default function Liquidity() {
 
   const tokens = tokensData?.tokens || [];
 
-  // Fetch user's uploaded tokens (their data)
-  const { data: userTokensData, isLoading: userTokensLoading } = useQuery({
-    queryKey: ['/api/tokens/creator', account],
-    queryFn: async () => {
-      if (!account) return { tokens: [] };
-      const response = await fetch(`/api/tokens/creator/${account}`);
-      if (!response.ok) throw new Error('Failed to fetch user tokens');
-      return response.json();
-    },
-    enabled: !!account,
-  });
 
-  const userTokens = userTokensData?.tokens || [];
 
   // Fetch user's liquidity positions
   const { data: liquidityData } = useQuery({
@@ -193,100 +181,9 @@ export default function Liquidity() {
           <p className="text-gray-400">Provide liquidity to earn trading fees on the Irys AMM</p>
         </div>
 
-        {/* User's Uploaded Data Section */}
-        <div className="mb-8">
-          <h2 className="text-xl font-semibold mb-4 text-white">Your Uploaded Data</h2>
-          {userTokensLoading ? (
-            <div className="text-center py-8 text-gray-400">Loading your data...</div>
-          ) : userTokens.length === 0 ? (
-            <GlassCard className="p-6">
-              <div className="text-center py-8">
-                <Droplets size={48} className="mx-auto text-gray-400 mb-4" />
-                <h3 className="text-lg font-medium text-white mb-2">No data uploaded yet</h3>
-                <p className="text-gray-400 mb-4">Upload your first data file to start earning from liquidity pools</p>
-                <Button onClick={() => window.location.href = '/upload'}>
-                  Upload Data
-                </Button>
-              </div>
-            </GlassCard>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {userTokens.map((token: any) => (
-                <GlassCard key={token.id} className="p-4">
-                  <div className="flex items-start justify-between mb-3">
-                    <div>
-                      <h3 className="font-medium text-white truncate">{token.name}</h3>
-                      <div className="flex items-center space-x-2 mt-1">
-                        <span className="text-xs px-2 py-1 rounded-full" 
-                          style={{ color: 'rgb(64, 224, 208)', backgroundColor: 'rgba(64, 224, 208, 0.2)' }}>
-                          {token.symbol}
-                        </span>
-                        <span className="text-xs text-purple-400 bg-purple-500/20 px-2 py-1 rounded-full">
-                          {token.category?.charAt(0).toUpperCase() + token.category?.slice(1) || 'Other'}
-                        </span>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <div className="text-sm font-medium text-white">
-                        {(token.currentPrice || 0.005).toFixed(4)} IRYS
-                      </div>
-                      <div className="text-xs text-gray-400">
-                        {(token.fileSize / 1024 / 1024).toFixed(1)} MB
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <div className="space-y-2 text-xs text-gray-300">
-                    <div className="flex justify-between">
-                      <span>Market Cap:</span>
-                      <span style={{ color: 'rgb(64, 224, 208)' }}>
-                        {(((token.currentPrice || 0.005) * 1000000000) / 1000000).toFixed(1)}M IRYS
-                      </span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>Supply:</span>
-                      <span>1B tokens</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>Created:</span>
-                      <span>{new Date(token.createdAt).toLocaleDateString()}</span>
-                    </div>
-                  </div>
-                  
-                  <div className="mt-4 pt-3 border-t border-white/10">
-                    <Button 
-                      size="sm" 
-                      className="w-full" 
-                      onClick={() => {
-                        setTokenA(token.tokenAddress);
-                        // Scroll to liquidity section
-                        document.getElementById('liquidity-section')?.scrollIntoView({ behavior: 'smooth' });
-                      }}
-                    >
-                      Add to Pool
-                    </Button>
-                  </div>
-                  
-                  {token.irysTransactionId && (
-                    <div className="mt-2">
-                      <a
-                        href={`https://scan.irys.network/tx/${token.irysTransactionId}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center text-xs text-gray-400 hover:text-white transition-colors"
-                      >
-                        <ExternalLink size={12} className="mr-1" />
-                        View on Irys
-                      </a>
-                    </div>
-                  )}
-                </GlassCard>
-              ))}
-            </div>
-          )}
-        </div>
 
-        <div id="liquidity-section" className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Add/Remove Liquidity */}
           <div>
             <div className="mb-6">

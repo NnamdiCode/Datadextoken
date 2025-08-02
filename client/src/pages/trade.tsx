@@ -87,10 +87,7 @@ export default function Trade() {
   // Execute trade
   const tradeMutation = useMutation({
     mutationFn: async (tradeData: any) => {
-      return apiRequest('/api/irys/swap', {
-        method: 'POST',
-        body: JSON.stringify(tradeData),
-      });
+      return apiRequest('/api/irys/swap', tradeData);
     },
     onSuccess: (data) => {
       toast({ title: 'Trade executed successfully!' });
