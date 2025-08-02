@@ -334,13 +334,13 @@ export default function Trade() {
       <div className="flex justify-between items-center mb-8">
         <div>
           <h1 className="text-3xl font-bold mb-2 shiny-text">Trade Data Tokens</h1>
-          <p className="text-gray-300 gradient-text">Swap your data tokens using our automated market maker</p>
+          <p className="text-white">Swap your data tokens using our automated market maker</p>
         </div>
       </div>
 
-      <div className="flex flex-col lg:flex-row gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
         {/* Left column - Trade panel */}
-        <div className="w-full lg:w-1/2">
+        <div className="w-full">
           <GlassCard className="sticky top-24 h-fit">
             <div className="p-4 border-b border-white/10">
               <div className="flex space-x-2">
@@ -492,7 +492,7 @@ export default function Trade() {
         </div>
         
         {/* Right column - Chart */}
-        <div className="w-full lg:w-1/2">
+        <div className="w-full">
           <div className="mb-6">
             <GlassCard className="p-6 h-fit">
               <div className="flex justify-between items-center mb-4">

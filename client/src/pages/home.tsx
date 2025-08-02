@@ -42,7 +42,7 @@ export default function Home() {
             <h1 className="text-5xl md:text-6xl font-bold mb-6 shiny-text">
               Tokenize & Trade Your Data
             </h1>
-            <p className="text-xl text-gray-300 mb-8 max-w-3xl mx-auto leading-relaxed gradient-text">
+            <p className="text-xl text-white mb-8 max-w-3xl mx-auto leading-relaxed">
               Upload your data to the Irys blockchain, receive unique tokens, and trade them on our decentralized exchange. 
               Turn your data into liquid assets.
             </p>
@@ -110,7 +110,7 @@ export default function Home() {
       <section className="py-16 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
           <div className="flex justify-between items-center mb-8">
-            <h2 className="text-2xl font-bold shiny-text">Recently Tokenized Data</h2>
+            <h2 className="text-2xl font-bold text-white">Recently Tokenized Data</h2>
             <Link href="/trade">
               <Button variant="outline" size="sm" icon={<ArrowRight size={16} />}>
                 View All
