@@ -30,7 +30,23 @@ export default function WalletSelector({ isOpen, onClose }: WalletSelectorProps)
       description: 'The most popular Ethereum wallet',
       isInstalled: () => !!(window as any).ethereum?.isMetaMask,
       connect: async () => {
-        await connectMetaMask();
+        // Add retry logic and better error handling for MetaMask
+        let retryCount = 0;
+        const maxRetries = 3;
+        
+        while (retryCount < maxRetries) {
+          try {
+            await connectMetaMask();
+            break; // Success, exit retry loop
+          } catch (error: any) {
+            retryCount++;
+            if (retryCount >= maxRetries) {
+              throw error; // Throw the last error after all retries
+            }
+            // Wait before retrying
+            await new Promise(resolve => setTimeout(resolve, 500));
+          }
+        }
       },
       installUrl: 'https://metamask.io/download/'
     },
@@ -43,7 +59,22 @@ export default function WalletSelector({ isOpen, onClose }: WalletSelectorProps)
       connect: async () => {
         // For Coinbase Wallet, we can still use the same ethereum provider
         if ((window as any).ethereum?.isCoinbaseWallet) {
-          await connectMetaMask();
+          // Add retry logic for Coinbase Wallet too
+          let retryCount = 0;
+          const maxRetries = 3;
+          
+          while (retryCount < maxRetries) {
+            try {
+              await connectMetaMask();
+              break;
+            } catch (error: any) {
+              retryCount++;
+              if (retryCount >= maxRetries) {
+                throw error;
+              }
+              await new Promise(resolve => setTimeout(resolve, 500));
+            }
+          }
         } else {
           throw new Error('Coinbase Wallet not detected');
         }
@@ -70,7 +101,22 @@ export default function WalletSelector({ isOpen, onClose }: WalletSelectorProps)
       description: 'Use any injected wallet provider',
       isInstalled: () => !!(window as any).ethereum,
       connect: async () => {
-        await connectMetaMask();
+        // Add retry logic for any injected wallet
+        let retryCount = 0;
+        const maxRetries = 3;
+        
+        while (retryCount < maxRetries) {
+          try {
+            await connectMetaMask();
+            break;
+          } catch (error: any) {
+            retryCount++;
+            if (retryCount >= maxRetries) {
+              throw error;
+            }
+            await new Promise(resolve => setTimeout(resolve, 500));
+          }
+        }
       },
       installUrl: ''
     }

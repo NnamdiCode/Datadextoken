@@ -317,7 +317,7 @@ export default function UploadPage() {
                     Drag and drop your file here
                   </p>
                   <p className="text-sm text-gray-400 mt-1">
-                    or click to browse (max 50MB)
+                    or click to browse (max 500MB)
                   </p>
                   <p className="text-xs text-gray-500 mt-2">
                     Supported: TXT, JSON, CSV, PDF, Images, Audio, Video, Documents, Archives

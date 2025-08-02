@@ -315,9 +315,9 @@ export default function Trade() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
+      <div className="flex flex-col lg:flex-row gap-8 items-start">
         {/* Left column - Trade panel */}
-        <div className="lg:col-span-1">
+        <div className="flex-1">
           <GlassCard className="sticky top-24 h-fit">
             <div className="p-4 border-b border-white/10">
               <div className="flex space-x-2">
@@ -342,6 +342,13 @@ export default function Trade() {
                 <label className="block text-sm font-medium mb-2 text-gray-300">From</label>
                 <div className="bg-white/5 border border-white/10 rounded-lg p-4">
                   <div className="flex justify-between items-center mb-3">
+                    <input
+                      type="number"
+                      className="bg-transparent text-left text-lg font-medium text-white placeholder-gray-500 outline-none flex-1 mr-4"
+                      placeholder="0.00"
+                      value={fromAmount}
+                      onChange={(e) => setFromAmount(e.target.value)}
+                    />
                     <button
                       onClick={() => setShowTokenList('from')}
                       className="flex items-center space-x-2 bg-white/10 hover:bg-white/20 rounded-md px-3 py-2 transition-colors"
@@ -360,13 +367,6 @@ export default function Trade() {
                       )}
                       <ChevronDown size={16} />
                     </button>
-                    <input
-                      type="number"
-                      className="bg-transparent text-right text-lg font-medium text-white placeholder-gray-500 outline-none flex-1 ml-4"
-                      placeholder="0.00"
-                      value={fromAmount}
-                      onChange={(e) => setFromAmount(e.target.value)}
-                    />
                   </div>
                   {fromToken && (
                     <div className="text-xs text-gray-400">
@@ -391,6 +391,13 @@ export default function Trade() {
                 <label className="block text-sm font-medium mb-2 text-gray-300">To</label>
                 <div className="bg-white/5 border border-white/10 rounded-lg p-4">
                   <div className="flex justify-between items-center mb-3">
+                    <input
+                      type="number"
+                      className="bg-transparent text-left text-lg font-medium text-white placeholder-gray-500 outline-none flex-1 mr-4"
+                      placeholder="0.00"
+                      value={toAmount}
+                      readOnly
+                    />
                     <button
                       onClick={() => setShowTokenList('to')}
                       className="flex items-center space-x-2 bg-white/10 hover:bg-white/20 rounded-md px-3 py-2 transition-colors"
@@ -409,13 +416,6 @@ export default function Trade() {
                       )}
                       <ChevronDown size={16} />
                     </button>
-                    <input
-                      type="number"
-                      className="bg-transparent text-right text-lg font-medium text-white placeholder-gray-500 outline-none flex-1 ml-4"
-                      placeholder="0.00"
-                      value={toAmount}
-                      readOnly
-                    />
                   </div>
                   {toToken && (
                     <div className="text-xs text-gray-400">
@@ -469,7 +469,7 @@ export default function Trade() {
         </div>
         
         {/* Right column - Chart */}
-        <div className="lg:col-span-1">
+        <div className="flex-1">
           <div className="mb-6">
             <GlassCard className="p-6 h-fit">
               <div className="flex justify-between items-center mb-4">
