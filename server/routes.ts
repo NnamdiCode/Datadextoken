@@ -267,14 +267,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json({ tokens });
     } catch (error) {
       console.error("Failed to get tokens by creator:", error);
-      res.status(500).json({ error: "Failed to get tokens by creator", details: error.message });
+      res.status(500).json({ error: "Failed to get tokens by creator", details: error instanceof Error ? error.message : 'Unknown error' });
     }
   });
 
   // Get trading quote using Uniswap-like AMM (x*y=k)
   app.get("/api/trade/quote", async (req, res) => {
     try {
-      const { fromToken, toToken, amount } = req.query;
+      const { fromToken, toToken, amountIn } = req.query;
+      const amount = amountIn; // Support both parameter names
       
       if (!fromToken || !toToken || !amount) {
         return res.status(400).json({ error: "Missing required parameters" });
@@ -308,19 +309,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // When trading dx for dy: dy = (y * dx) / (x + dx)
       const reserveIn = parseFloat(pool.reserveA);
       const reserveOut = parseFloat(pool.reserveB);
-      const amountIn = parseFloat(amount as string);
+      const inputAmount = parseFloat(amount as string);
       
       // Apply 0.3% fee (like Uniswap)
-      const amountInWithFee = amountIn * 0.997;
+      const amountInWithFee = inputAmount * 0.997;
       
       // Calculate output amount using AMM formula
       const outputAmount = (reserveOut * amountInWithFee) / (reserveIn + amountInWithFee);
       
       // Calculate price impact
-      const priceImpact = ((amountIn / reserveIn) * 100);
+      const priceImpact = ((inputAmount / reserveIn) * 100);
       
       // Fee calculation
-      const fee = (amountIn * 0.003).toFixed(6);
+      const fee = (inputAmount * 0.003).toFixed(6);
       
       res.json({
         quote: {
@@ -328,7 +329,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           toToken: toTokenData.tokenAddress,
           amountIn: amount,
           amountOut: outputAmount.toFixed(6),
-          exchangeRate: (outputAmount / amountIn).toFixed(6),
+          exchangeRate: (outputAmount / inputAmount).toFixed(6),
           priceImpact: priceImpact.toFixed(3),
           fee,
           minAmountOut: (outputAmount * 0.995).toFixed(6), // 0.5% slippage

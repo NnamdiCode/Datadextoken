@@ -105,12 +105,38 @@ export default function Trade() {
     },
   });
 
-  // Update to amount when quote changes
+  // Update to amount when quote changes or from amount changes
   useEffect(() => {
     if (quoteData?.quote?.amountOut) {
       setToAmount(quoteData.quote.amountOut);
     }
   }, [quoteData]);
+
+  // Calculate output amount automatically when inputs change
+  useEffect(() => {
+    const calculateOutputAmount = async () => {
+      if (!fromToken || !toToken || !fromAmount || parseFloat(fromAmount) === 0) {
+        setToAmount('');
+        return;
+      }
+
+      try {
+        const response = await fetch(`/api/trade/quote?fromToken=${fromToken}&toToken=${toToken}&amountIn=${fromAmount}`);
+        if (response.ok) {
+          const data = await response.json();
+          if (data.quote?.amountOut) {
+            setToAmount(data.quote.amountOut);
+          }
+        }
+      } catch (error) {
+        console.error('Failed to calculate output amount:', error);
+      }
+    };
+
+    // Debounce the calculation to avoid too many API calls
+    const timeoutId = setTimeout(calculateOutputAmount, 300);
+    return () => clearTimeout(timeoutId);
+  }, [fromToken, toToken, fromAmount]);
 
   // Filter tokens for modal
   const filteredTokens = tokens.filter((token: any) =>
@@ -312,9 +338,9 @@ export default function Trade() {
         </div>
       </div>
 
-      <div className="flex flex-col lg:flex-row gap-8 items-start">
+      <div className="flex flex-col lg:flex-row gap-8">
         {/* Left column - Trade panel */}
-        <div className="flex-1">
+        <div className="w-full lg:w-1/2">
           <GlassCard className="sticky top-24 h-fit">
             <div className="p-4 border-b border-white/10">
               <div className="flex space-x-2">
@@ -466,7 +492,7 @@ export default function Trade() {
         </div>
         
         {/* Right column - Chart */}
-        <div className="flex-1">
+        <div className="w-full lg:w-1/2">
           <div className="mb-6">
             <GlassCard className="p-6 h-fit">
               <div className="flex justify-between items-center mb-4">
