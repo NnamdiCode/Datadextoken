@@ -151,11 +151,11 @@ export default function UploadPage() {
     if (e.target.files && e.target.files[0]) {
       const selectedFile = e.target.files[0];
       
-      // Check file size (50MB limit)
-      if (selectedFile.size > 50 * 1024 * 1024) {
+      // Check file size (500MB limit)
+      if (selectedFile.size > 500 * 1024 * 1024) {
         toast({ 
           title: 'File too large', 
-          description: 'Maximum file size is 50MB',
+          description: 'Maximum file size is 500MB',
           variant: 'destructive'
         });
         return;

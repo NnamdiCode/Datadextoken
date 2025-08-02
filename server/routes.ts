@@ -12,7 +12,7 @@ import { uploadRequestSchema, tradeRequestSchema } from "@shared/schema";
 const upload = multer({
   dest: "uploads/",
   limits: {
-    fileSize: 50 * 1024 * 1024, // 50MB limit
+    fileSize: 500 * 1024 * 1024, // 500MB limit
   },
   fileFilter: (req, file, cb) => {
     // Allow most file types but filter out executables
