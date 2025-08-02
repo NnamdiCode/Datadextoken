@@ -3,35 +3,14 @@ import { motion } from 'framer-motion';
 import { ArrowDownUp, ArrowRight, ChevronDown, Clock, RefreshCw, Search, Settings, TrendingUp, X } from 'lucide-react';
 import GlassCard from '../components/GlassCard';
 import Button from '../components/Button';
-import { Line } from 'react-chartjs-2';
-import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  Title,
-  Tooltip,
-  Legend,
-  Filler
-} from 'chart.js';
+
 import { useToast } from '../hooks/use-toast';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiRequest } from '../lib/queryClient';
 import WalletConnect from '../components/WalletConnect';
 import { useWallet } from '../hooks/useWallet';
 
-// Register ChartJS components
-ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  Title,
-  Tooltip,
-  Legend,
-  Filler
-);
+
 
 export default function Trade() {
   const [selectedTab, setSelectedTab] = useState('swap');
@@ -210,124 +189,11 @@ export default function Trade() {
       : 'text-gray-300 hover:bg-white/5 hover:text-white'
     }`;
 
-  // Generate chart data based on actual token trading data
-  const generateRealPriceData = () => {
-    const selectedFromToken = tokens.find((t: any) => t.tokenAddress === fromToken);
-    const selectedToToken = tokens.find((t: any) => t.tokenAddress === toToken);
-    const trades = tradesData?.trades || [];
-    
-    // Use actual token prices and trading activity
-    if (selectedFromToken && selectedToToken) {
-      const basePrice = selectedFromToken.currentPrice || 0.005;
-      const targetPrice = selectedToToken.currentPrice || 0.005;
-      const exchangeRate = targetPrice / basePrice;
-      
-      // Generate 24 hour price history based on real exchange rate
-      return Array.from({ length: 24 }, (_, i) => {
-        const hourAgo = 23 - i;
-        const timeDecay = Math.exp(-hourAgo * 0.05); // Natural price decay
-        const marketVolatility = 0.15 * Math.sin(i * 0.5) * timeDecay;
-        const trendFactor = 1 + (i * 0.001); // Slight upward trend
-        return Math.max(0.0001, exchangeRate * trendFactor * (1 + marketVolatility));
-      });
-    }
-    
-    // Default price series for IRYS base token
-    return Array.from({ length: 24 }, (_, i) => {
-      const basePrice = 0.005;
-      const hourlyChange = 0.0002 * Math.sin(i * 0.3);
-      const marketNoise = (Math.random() - 0.5) * 0.0001;
-      return Math.max(0.0001, basePrice + hourlyChange + marketNoise);
-    });
-  };
 
-  const chartLabels = Array.from({ length: 24 }, (_, i) => {
-    const hour = new Date();
-    hour.setHours(hour.getHours() - (23 - i));
-    return hour.getHours().toString().padStart(2, '0') + ':00';
-  });
+
+
   
-  const chartData = {
-    labels: chartLabels,
-    datasets: [
-      {
-        label: fromToken && toToken ? `${tokens.find((t: any) => t.tokenAddress === fromToken)?.symbol || 'Token'} / ${tokens.find((t: any) => t.tokenAddress === toToken)?.symbol || 'Token'}` : 'Price (IRYS)',
-        data: generateRealPriceData(),
-        borderColor: 'rgb(64, 224, 208)', // Turquoise - Irys brand color
-        backgroundColor: 'rgba(64, 224, 208, 0.1)',
-        borderWidth: 3,
-        fill: true,
-        tension: 0.4,
-        pointRadius: 0,
-        pointHoverRadius: 8,
-        pointBackgroundColor: 'rgb(64, 224, 208)',
-        pointBorderColor: 'white',
-        pointBorderWidth: 2,
-      }
-    ]
-  };
-  
-  const chartOptions = {
-    responsive: true,
-    maintainAspectRatio: false,
-    plugins: {
-      legend: {
-        display: false,
-      },
-      tooltip: {
-        mode: 'index' as const,
-        intersect: false,
-        backgroundColor: 'rgba(15, 23, 42, 0.95)',
-        titleColor: 'rgb(64, 224, 208)', // Turquoise
-        bodyColor: 'white',
-        borderColor: 'rgb(64, 224, 208)',
-        borderWidth: 2,
-        cornerRadius: 8,
-        displayColors: false,
-        callbacks: {
-          label: function(context: any) {
-            return `Price: ${parseFloat(context.parsed.y).toFixed(6)} IRYS`;
-          },
-          title: function(context: any) {
-            return `Time: ${context[0].label}`;
-          }
-        }
-      },
-    },
-    scales: {
-      x: {
-        display: true,
-        grid: {
-          display: false,
-        },
-        ticks: {
-          color: 'rgb(64, 224, 208)', // Turquoise
-          font: {
-            size: 11,
-          },
-        },
-      },
-      y: {
-        display: true,
-        grid: {
-          color: 'rgba(64, 224, 208, 0.1)', // Subtle turquoise grid
-        },
-        ticks: {
-          color: 'white',
-          font: {
-            size: 11,
-          },
-          callback: function(value: any) {
-            return parseFloat(value).toFixed(6) + ' IRYS';
-          },
-        },
-      },
-    },
-    interaction: {
-      mode: 'index' as const,
-      intersect: false,
-    },
-  };
+
 
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -338,10 +204,10 @@ export default function Trade() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
-        {/* Left column - Trade panel */}
-        <div className="w-full">
-          <GlassCard className="sticky top-24 h-fit">
+      <div className="flex justify-center">
+        {/* Centered Trade panel */}
+        <div className="w-full max-w-md">
+          <GlassCard className="h-fit">
             <div className="p-4 border-b border-white/10">
               <div className="flex space-x-2">
                 <button 
@@ -489,65 +355,6 @@ export default function Trade() {
               </div>
             </div>
           </GlassCard>
-        </div>
-        
-        {/* Right column - Chart */}
-        <div className="w-full">
-          <div className="mb-6">
-            <GlassCard className="p-6 h-fit">
-              <div className="flex justify-between items-center mb-4">
-                <div>
-                  <h2 className="text-xl font-medium text-white">Price Chart</h2>
-                  <div className="flex items-center mt-1">
-                    <span className="text-2xl font-bold mr-2 text-turquoise-400" style={{ color: 'rgb(64, 224, 208)' }}>
-                      {quoteData ? (parseFloat(quoteData.amountOut) / parseFloat(fromAmount || '1')).toFixed(6) : '--'}
-                    </span>
-                    <span className="text-sm bg-green-500/20 text-green-400 px-2 py-0.5 rounded-full">
-                      +3.2%
-                    </span>
-                  </div>
-                  {fromToken && toToken && (
-                    <div className="text-sm text-gray-300 mt-1">
-                      {tokens.find((t: any) => t.tokenAddress === fromToken)?.symbol || 'Token'} / {tokens.find((t: any) => t.tokenAddress === toToken)?.symbol || 'Token'}
-                    </div>
-                  )}
-                </div>
-                <div className="flex space-x-2">
-                  <button 
-                    className="p-2 bg-white/5 hover:bg-white/10 rounded-md transition-colors text-turquoise-400 hover:text-white"
-                    style={{ color: 'rgb(64, 224, 208)' }}
-                    onClick={() => refetchQuote()}
-                    title="Refresh Price Data"
-                  >
-                    <RefreshCw size={16} />
-                  </button>
-                </div>
-              </div>
-              
-              <div className="h-64">
-                <Line data={chartData} options={chartOptions} />
-              </div>
-              
-              <div className="flex justify-center mt-4 space-x-2">
-                {['1H', '24H', '7D', '30D', 'All'].map((period) => (
-                  <button
-                    key={period}
-                    className={`px-3 py-1 text-xs rounded-md transition-colors ${
-                      period === '24H' 
-                        ? 'text-white border border-turquoise-400' 
-                        : 'bg-white/5 text-gray-300 hover:bg-white/10 hover:text-turquoise-400'
-                    }`}
-                    style={period === '24H' ? { 
-                      borderColor: 'rgb(64, 224, 208)',
-                      backgroundColor: 'rgba(64, 224, 208, 0.1)'
-                    } : {}}
-                  >
-                    {period}
-                  </button>
-                ))}
-              </div>
-            </GlassCard>
-          </div>
         </div>
       </div>
       
