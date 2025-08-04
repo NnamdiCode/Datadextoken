@@ -49,7 +49,7 @@ export default function Home() {
                 <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/30 to-transparent animate-shimmer"></div>
               </div>
               <h1 className="text-5xl md:text-6xl font-bold shiny-text">
-                IrysDEX
+                DataSwap
               </h1>
             </div>
             <h2 className="text-2xl md:text-3xl font-semibold mb-6 text-cyan-300">

@@ -51,7 +51,7 @@ export default function Layout({ children }: LayoutProps) {
                       <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/20 to-transparent animate-shimmer"></div>
                     </div>
                     <h1 className="text-xl font-bold text-primary">
-                      IrysDEX
+                      DataSwap
                     </h1>
                   </div>
                   <span className="ml-3 text-sm bg-primary/20 text-primary px-2 py-1 rounded-full">

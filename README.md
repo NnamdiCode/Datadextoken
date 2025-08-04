@@ -1,8 +1,8 @@
-# IrysDEX - Decentralized Data Exchange
+# DataSwap - Decentralized Data Exchange
 
 🚀 **A revolutionary platform for tokenizing and trading data on the Irys blockchain**
 
-![IrysDEX Banner](https://via.placeholder.com/800x200/0B1426/40E0D0?text=IrysDEX+-+Decentralized+Data+Exchange)
+![DataSwap Banner](https://via.placeholder.com/800x200/0B1426/40E0D0?text=DataSwap+-+Decentralized+Data+Exchange)
 
 ## 🌟 Features
 
