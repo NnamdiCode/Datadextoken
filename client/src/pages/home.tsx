@@ -143,60 +143,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Recent Trades */}
-      <section className="py-16 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-7xl mx-auto">
-          <h2 className="text-2xl font-bold mb-8">Recent Trades</h2>
-          
-          {recentTrades?.trades ? (
-            <GlassCard className="overflow-hidden">
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead className="border-b border-white/10">
-                    <tr>
-                      <th className="text-left py-4 px-6 text-sm font-medium text-gray-300">From</th>
-                      <th className="text-left py-4 px-6 text-sm font-medium text-gray-300">To</th>
-                      <th className="text-right py-4 px-6 text-sm font-medium text-gray-300">Amount In</th>
-                      <th className="text-right py-4 px-6 text-sm font-medium text-gray-300">Amount Out</th>
-                      <th className="text-right py-4 px-6 text-sm font-medium text-gray-300">Time</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {recentTrades.trades.map((trade: any) => (
-                      <tr key={trade.id} className="border-b border-white/5 hover:bg-white/5">
-                        <td className="py-4 px-6">
-                          <span className="text-sm font-mono">
-                            {trade.fromTokenAddress.slice(0, 8)}...
-                          </span>
-                        </td>
-                        <td className="py-4 px-6">
-                          <span className="text-sm font-mono">
-                            {trade.toTokenAddress.slice(0, 8)}...
-                          </span>
-                        </td>
-                        <td className="py-4 px-6 text-right">
-                          <span className="text-sm">{parseFloat(trade.amountIn).toFixed(6)}</span>
-                        </td>
-                        <td className="py-4 px-6 text-right">
-                          <span className="text-sm">{parseFloat(trade.amountOut).toFixed(6)}</span>
-                        </td>
-                        <td className="py-4 px-6 text-right text-sm text-gray-400">
-                          {new Date(trade.executedAt).toLocaleTimeString()}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </GlassCard>
-          ) : (
-            <div className="text-center py-12 text-gray-400">
-              <TrendingUp size={48} className="mx-auto mb-4 opacity-50" />
-              <p>No trades yet. Start trading to see activity!</p>
-            </div>
-          )}
-        </div>
-      </section>
+
 
       {/* CTA Section */}
       <section className="py-20 px-4 sm:px-6 lg:px-8">
