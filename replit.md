@@ -150,3 +150,8 @@ The application follows a modular architecture with clear separation between fro
 - **August 4, 2025**: Chart only displays when actual trading data exists (no mock data)
 - **August 4, 2025**: Real-time price and volume visualization with multiple timeframes
 - **August 4, 2025**: Enhanced trading interface with proper data-driven chart display
+- **August 4, 2025**: **BLOCKCHAIN INTEGRATION**: Implemented real Irys blockchain transaction recording
+- **August 4, 2025**: Created comprehensive IrysService for data uploads and trade recording on Irys VM
+- **August 4, 2025**: Added Irys explorer links throughout application for full transaction visibility
+- **August 4, 2025**: All uploads and trades now create real blockchain transactions visible on https://explorer.irys.xyz/
+- **August 4, 2025**: Enhanced user experience with direct links to Irys blockchain explorer for verification

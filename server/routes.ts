@@ -4,7 +4,7 @@ import multer from "multer";
 import path from "path";
 import fs from "fs";
 import { storage } from "./storage";
-import { irysService } from "./services/irys";
+import { irysService } from "./irysService";
 import { contractService } from "./services/contracts";
 import { uploadRequestSchema, tradeRequestSchema } from "@shared/schema";
 
@@ -357,7 +357,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Execute token trade using AMM
+  // Execute token trade using AMM with real Irys blockchain recording
   app.post("/api/trade", async (req, res) => {
     try {
       const { fromToken, toToken, amountIn, amountOut, traderAddress, slippage } = req.body;
@@ -380,23 +380,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ error: "Liquidity pool not found" });
       }
       
+      // Record trade transaction on Irys blockchain
+      const tradeTransaction = await irysService.recordTradeTransaction({
+        fromToken,
+        toToken,
+        amountIn,
+        amountOut,
+        trader: traderAddress,
+        timestamp: Date.now()
+      });
+      
       // Update pool reserves after trade (AMM mechanism)
       const newReserveA = parseFloat(pool.reserveA) + parseFloat(amountIn);
       const newReserveB = parseFloat(pool.reserveB) - parseFloat(amountOut);
       
       await storage.updateLiquidityPool(fromToken, toToken, newReserveA.toString(), newReserveB.toString());
       
-      // Generate Irys transaction hash
-      const irysTransactionHash = 'irys_' + Math.random().toString(36).substr(2, 32);
-      
-      // Create trade record
+      // Create trade record with real Irys transaction ID
       const trade = await storage.createTrade({
         fromTokenAddress: fromToken,
         toTokenAddress: toToken,
         amountIn: amountIn.toString(),
         amountOut: amountOut.toString(),
         traderAddress,
-        transactionHash: irysTransactionHash,
+        transactionHash: tradeTransaction.transactionId,
         pricePerToken: parseFloat(amountOut) / parseFloat(amountIn),
         feeAmount: (parseFloat(amountIn) * 0.003).toString()
       });
@@ -404,12 +411,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json({
         success: true,
         trade,
-        transactionHash: irysTransactionHash,
+        transactionHash: tradeTransaction.transactionId,
+        explorerUrl: tradeTransaction.explorerUrl,
         poolUpdated: {
           newReserveA: newReserveA.toString(),
           newReserveB: newReserveB.toString()
         },
-        message: "Trade executed successfully on Irys VM"
+        message: "Trade executed successfully and recorded on Irys blockchain"
       });
     } catch (error) {
       console.error("Trade execution failed:", error);
@@ -695,7 +703,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Get token data
-      const tokens = await storage.getAllTokens();
+      const tokens = await storage.getAllDataTokens();
       const fromTokenData = tokens.find((t: any) => t.tokenAddress === fromToken);
       const toTokenData = tokens.find((t: any) => t.tokenAddress === toToken);
 
@@ -704,7 +712,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Get recent trades for this pair to calculate real metrics
-      const trades = await storage.getAllTrades();
+      const trades = await storage.getTradesByUser("all");
       const pairTrades = trades.filter((t: any) => 
         (t.fromToken === fromToken && t.toToken === toToken) ||
         (t.fromToken === toToken && t.toToken === fromToken)
@@ -752,8 +760,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get("/api/trading/market-stats", async (req, res) => {
     try {
-      const tokens = await storage.getAllTokens();
-      const trades = await storage.getAllTrades();
+      const tokens = await storage.getAllDataTokens();
+      const trades = await storage.getTradesByUser("all");
       
       const stats = {
         totalTokens: tokens.length,

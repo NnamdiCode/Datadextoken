@@ -4,6 +4,7 @@ import { ArrowDownUp, ArrowRight, ChevronDown, Clock, RefreshCw, Search, Setting
 import GlassCard from '../components/GlassCard';
 import Button from '../components/Button';
 import TradingChart from '../components/TradingChart';
+import { IrysTransactionBadge, IrysExplorerLink } from '../components/IrysExplorerLink';
 
 import { useToast } from '../hooks/use-toast';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -69,8 +70,18 @@ export default function Trade() {
     mutationFn: async (tradeData: any) => {
       return apiRequest('/api/trade', tradeData);
     },
-    onSuccess: (data) => {
-      toast({ title: 'Trade executed successfully!' });
+    onSuccess: (data: any) => {
+      const explorerUrl = data.explorerUrl || `https://explorer.irys.xyz/tx/${data.transactionHash}`;
+      toast({ 
+        title: 'Trade executed successfully!',
+        description: (
+          <div className="mt-2">
+            <IrysExplorerLink transactionId={data.transactionHash}>
+              View on Irys Explorer
+            </IrysExplorerLink>
+          </div>
+        )
+      });
       queryClient.invalidateQueries({ queryKey: ['/api/tokens'] });
       queryClient.invalidateQueries({ queryKey: ['/api/trades'] });
       setFromAmount('');

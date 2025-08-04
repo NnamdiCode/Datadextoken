@@ -7,6 +7,7 @@ import { useToast } from '../hooks/use-toast';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import WalletConnect from '../components/WalletConnect';
 import { useWallet } from '../hooks/useWallet';
+import { IrysTransactionBadge, IrysExplorerLink } from '../components/IrysExplorerLink';
 
 export default function UploadPage() {
   const [file, setFile] = useState<File | null>(null);
