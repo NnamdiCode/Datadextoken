@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { ArrowDownUp, ArrowRight, ChevronDown, Clock, RefreshCw, Search, Settings, TrendingUp, X } from 'lucide-react';
 import GlassCard from '../components/GlassCard';
 import Button from '../components/Button';
+import TradingChart from '../components/TradingChart';
 
 import { useToast } from '../hooks/use-toast';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -204,9 +205,14 @@ export default function Trade() {
         </div>
       </div>
 
-      <div className="flex justify-center">
-        {/* Centered Trade panel */}
-        <div className="w-full max-w-md">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        {/* Trading Chart */}
+        <div className="order-2 lg:order-1">
+          <TradingChart fromToken={fromToken} toToken={toToken} />
+        </div>
+
+        {/* Trade Panel */}
+        <div className="order-1 lg:order-2 w-full max-w-md mx-auto">
           <GlassCard className="h-fit">
             <div className="p-4 border-b border-white/10">
               <div className="flex space-x-2">
