@@ -185,6 +185,14 @@ export default function Trade() {
       return;
     }
 
+    console.log('🔄 Executing trade:', {
+      fromToken,
+      toToken,
+      amountIn: fromAmount,
+      amountOut: toAmount,
+      traderAddress: account
+    });
+
     tradeMutation.mutate({
       fromToken: fromToken,
       toToken: toToken,
@@ -344,18 +352,25 @@ export default function Trade() {
               
               <Button
                 onClick={handleTrade}
-                disabled={!isConnected || !fromAmount || parseFloat(fromAmount) === 0 || tradeMutation.isPending || !fromToken || !toToken}
+                disabled={!isConnected || !fromAmount || parseFloat(fromAmount) === 0 || tradeMutation.isPending || !fromToken || !toToken || !toAmount}
                 fullWidth
+                className="bg-[#00D85A] hover:bg-[#00B047] text-black font-semibold transition-all duration-200"
               >
                 {tradeMutation.isPending ? (
                   <div className="flex items-center justify-center">
-                    <Clock size={16} className="animate-spin mr-2" />
-                    <span>Swapping...</span>
+                    <RefreshCw size={16} className="animate-spin mr-2" />
+                    <span>Executing Swap on Irys...</span>
                   </div>
                 ) : !isConnected ? (
-                  'Connect Wallet'
+                  'Connect Wallet to Trade'
+                ) : !fromToken || !toToken ? (
+                  'Select Tokens to Swap'
+                ) : !fromAmount || parseFloat(fromAmount) === 0 ? (
+                  'Enter Amount to Swap'
+                ) : !toAmount ? (
+                  'Getting Quote...'
                 ) : (
-                  'Swap Tokens'
+                  `Swap ${fromAmount} ${getTokenByAddress(fromToken)?.symbol || 'Token'} for ${parseFloat(toAmount).toFixed(4)} ${getTokenByAddress(toToken)?.symbol || 'Token'}`
                 )}
               </Button>
               

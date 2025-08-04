@@ -374,10 +374,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ error: "Token not found" });
       }
       
-      // Get liquidity pool
-      const pool = await storage.getLiquidityPool(fromToken, toToken);
+      // Get or create liquidity pool
+      let pool = await storage.getLiquidityPool(fromToken, toToken);
       if (!pool) {
-        return res.status(404).json({ error: "Liquidity pool not found" });
+        // Create initial liquidity pool with default reserves if it doesn't exist
+        const initialReserveA = (Math.random() * 1000000 + 100000).toFixed(0); // 100k-1M tokens
+        const initialReserveB = (Math.random() * 1000000 + 100000).toFixed(0);
+        
+        pool = await storage.createLiquidityPool({
+          tokenAAddress: fromToken,
+          tokenBAddress: toToken,
+          reserveA: initialReserveA,
+          reserveB: initialReserveB,
+          totalLiquidity: Math.sqrt(parseFloat(initialReserveA) * parseFloat(initialReserveB)).toFixed(0)
+        });
+        
+        console.log(`🏊 Created new liquidity pool for ${fromToken} <-> ${toToken}`);
       }
       
       // Record trade transaction on Irys blockchain
