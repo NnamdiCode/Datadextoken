@@ -5,7 +5,8 @@
       "src": "server/index.ts",
       "use": "@vercel/node",
       "config": {
-        "includeFiles": ["server/**", "shared/**", "contracts/**"]
+        "includeFiles": ["server/**", "shared/**", "contracts/**"],
+        "maxLambdaSize": "10mb"
       }
     },
     {
@@ -28,10 +29,5 @@
   ],
   "env": {
     "NODE_ENV": "production"
-  },
-  "functions": {
-    "server/index.ts": {
-      "maxDuration": 30
-    }
   }
 }
