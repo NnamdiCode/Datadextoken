@@ -205,14 +205,14 @@ export default function Trade() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        {/* Trading Chart */}
-        <div className="order-2 lg:order-1">
-          <TradingChart fromToken={fromToken} toToken={toToken} />
-        </div>
+      {/* Trading Chart - Full Width TradingView Style */}
+      <div className="mb-8">
+        <TradingChart fromToken={fromToken} toToken={toToken} />
+      </div>
 
-        {/* Trade Panel */}
-        <div className="order-1 lg:order-2 w-full max-w-md mx-auto">
+      <div className="flex justify-center">
+        {/* Centered Trade Panel */}
+        <div className="w-full max-w-md">
           <GlassCard className="h-fit">
             <div className="p-4 border-b border-white/10">
               <div className="flex space-x-2">

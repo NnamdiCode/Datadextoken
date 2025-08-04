@@ -70,8 +70,10 @@ export default function TradingChart({ fromToken, toToken }: TradingChartProps) 
     refetchInterval: 5000,
   });
 
-  // Generate realistic price history if no real data exists
-  const generatePriceHistory = (basePrice: number, timeframe: string): PricePoint[] => {
+  // Generate price history from actual trading data only
+  const generateRealPriceHistory = (trades: any[], timeframe: string): PricePoint[] => {
+    if (!trades || trades.length === 0) return [];
+    
     const now = Date.now();
     const points: PricePoint[] = [];
     
@@ -81,53 +83,57 @@ export default function TradingChart({ fromToken, toToken }: TradingChartProps) 
     switch (timeframe) {
       case '1H':
         intervals = 60;
-        intervalMs = 60 * 1000; // 1 minute intervals
+        intervalMs = 60 * 1000;
         break;
       case '1D':
         intervals = 24;
-        intervalMs = 60 * 60 * 1000; // 1 hour intervals
+        intervalMs = 60 * 60 * 1000;
         break;
       case '7D':
         intervals = 28;
-        intervalMs = 6 * 60 * 60 * 1000; // 6 hour intervals
+        intervalMs = 6 * 60 * 60 * 1000;
         break;
       case '30D':
         intervals = 30;
-        intervalMs = 24 * 60 * 60 * 1000; // 1 day intervals
+        intervalMs = 24 * 60 * 60 * 1000;
         break;
       default:
         intervals = 24;
         intervalMs = 60 * 60 * 1000;
     }
 
-    let currentPrice = basePrice;
-    
+    // Process actual trading data into time intervals
     for (let i = intervals; i >= 0; i--) {
       const timestamp = now - (i * intervalMs);
+      const periodStart = timestamp;
+      const periodEnd = timestamp + intervalMs;
       
-      // Simulate realistic price movement
-      const volatility = 0.02; // 2% volatility
-      const trend = Math.sin(i / 10) * 0.005; // Slight trend
-      const randomChange = (Math.random() - 0.5) * volatility;
+      // Find trades in this time period
+      const periodTrades = trades.filter((trade: any) => 
+        trade.timestamp >= periodStart && trade.timestamp < periodEnd
+      );
       
-      const priceChange = trend + randomChange;
-      currentPrice = Math.max(0.000001, currentPrice * (1 + priceChange));
-      
-      const open = i === intervals ? basePrice : points[points.length - 1]?.close || currentPrice;
-      const close = currentPrice;
-      const high = Math.max(open, close) * (1 + Math.random() * 0.01);
-      const low = Math.min(open, close) * (1 - Math.random() * 0.01);
-      const volume = Math.random() * 100000 + 10000;
-
-      points.push({
-        timestamp,
-        price: currentPrice,
-        volume,
-        high,
-        low,
-        open,
-        close
-      });
+      if (periodTrades.length > 0) {
+        // Calculate OHLCV from actual trades
+        const prices = periodTrades.map((t: any) => parseFloat(t.executedPrice || t.amountOut / t.amountIn));
+        const volumes = periodTrades.map((t: any) => parseFloat(t.amountIn));
+        
+        const open = prices[0];
+        const close = prices[prices.length - 1];
+        const high = Math.max(...prices);
+        const low = Math.min(...prices);
+        const volume = volumes.reduce((a, b) => a + b, 0);
+        
+        points.push({
+          timestamp,
+          price: close,
+          volume,
+          high,
+          low,
+          open,
+          close
+        });
+      }
     }
     
     return points;
@@ -153,7 +159,7 @@ export default function TradingChart({ fromToken, toToken }: TradingChartProps) 
       return null;
     }
 
-    const priceHistory = pairData?.priceHistory || generatePriceHistory(currentPrice || 1, timeframe);
+    const priceHistory = pairData?.priceHistory || generateRealPriceHistory(recentTrades?.trades || [], timeframe);
     
     if (chartType === 'price') {
       return {
@@ -272,66 +278,52 @@ export default function TradingChart({ fromToken, toToken }: TradingChartProps) 
     }
   };
 
-  // Calculate statistics
+  // Calculate statistics from real trading data only
   const stats = useMemo(() => {
-    if (!pairData && currentPrice) {
-      // Generate basic stats from current price
-      const priceHistory = generatePriceHistory(currentPrice, timeframe);
-      const prices = priceHistory.map(p => p.price);
-      const volumes = priceHistory.map(p => p.volume);
-      
-      return {
-        currentPrice,
-        priceChange24h: currentPrice * (Math.random() * 0.1 - 0.05), // ±5% random change
-        percentChange24h: (Math.random() * 10 - 5), // ±5% random change
-        volume24h: volumes.reduce((a, b) => a + b, 0),
-        high24h: Math.max(...prices),
-        low24h: Math.min(...prices)
-      };
+    if (pairData && recentTrades?.trades?.length > 0) {
+      return pairData;
     }
-    return pairData;
-  }, [pairData, currentPrice, timeframe]);
+    return null;
+  }, [pairData, recentTrades]);
 
+  // Don't show chart until tokens are selected and have trading data
   if (!fromToken || !toToken || fromToken === toToken) {
-    return (
-      <GlassCard className="h-80">
-        <div className="p-6 flex items-center justify-center h-full">
-          <div className="text-center">
-            <BarChart3 className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-white mb-2">Select Token Pair</h3>
-            <p className="text-gray-400">Choose both tokens to view the trading chart</p>
-          </div>
-        </div>
-      </GlassCard>
-    );
+    return null;
+  }
+
+  // Check if there's actual trading data for this pair
+  const hasRealTradingData = recentTrades?.trades && recentTrades.trades.length > 0;
+  
+  if (!hasRealTradingData) {
+    return null;
   }
 
   return (
-    <GlassCard className="h-96">
+    <GlassCard className="h-[600px] w-full">
       <div className="p-4">
-        {/* Header with stats */}
-        <div className="flex items-center justify-between mb-4">
-          <div>
-            <h3 className="text-lg font-semibold text-white mb-1">
+        {/* TradingView Style Header */}
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center space-x-6">
+            <h2 className="text-2xl font-bold text-white">
               {fromTokenData?.symbol || 'Token'} / {toTokenData?.symbol || 'Token'}
-            </h3>
+            </h2>
             {stats && (
-              <div className="flex items-center space-x-4 text-sm">
-                <span className="text-white font-mono">
+              <div className="flex items-center space-x-6 text-lg">
+                <div className="text-white font-mono font-bold">
                   {stats.currentPrice.toFixed(6)}
-                </span>
-                <span className={`flex items-center ${stats.percentChange24h >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                </div>
+                <div className={`flex items-center font-semibold ${stats.percentChange24h >= 0 ? 'text-green-400' : 'text-red-400'}`}>
                   {stats.percentChange24h >= 0 ? (
-                    <TrendingUp className="w-3 h-3 mr-1" />
+                    <TrendingUp className="w-4 h-4 mr-1" />
                   ) : (
-                    <TrendingDown className="w-3 h-3 mr-1" />
+                    <TrendingDown className="w-4 h-4 mr-1" />
                   )}
                   {stats.percentChange24h.toFixed(2)}%
-                </span>
-                <span className="text-gray-400 flex items-center">
-                  <Activity className="w-3 h-3 mr-1" />
+                </div>
+                <div className="text-gray-300 flex items-center">
+                  <Activity className="w-4 h-4 mr-1" />
                   Vol: {stats.volume24h.toLocaleString()}
-                </span>
+                </div>
               </div>
             )}
           </div>
@@ -382,7 +374,7 @@ export default function TradingChart({ fromToken, toToken }: TradingChartProps) 
         </div>
 
         {/* Chart */}
-        <div className="h-64">
+        <div className="h-[520px]">
           {isLoading ? (
             <div className="flex items-center justify-center h-full">
               <div className="animate-spin rounded-full h-8 w-8 border-2 border-cyan-400 border-t-transparent" />
