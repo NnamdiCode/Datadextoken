@@ -40,7 +40,7 @@ export default function Home() {
             transition={{ duration: 0.8 }}
           >
             <div className="flex items-center justify-center mb-6">
-              <div className="w-16 h-16 bg-gradient-to-br from-cyan-400 to-blue-600 rounded-2xl flex items-center justify-center mr-4 relative overflow-hidden shadow-2xl">
+              <div className="w-16 h-16 bg-gradient-to-br from-green-400 to-emerald-600 rounded-2xl flex items-center justify-center mr-4 relative overflow-hidden shadow-2xl">
                 <svg width="32" height="32" viewBox="0 0 24 24" fill="none" className="relative z-10">
                   <path d="M12 2L22 8.5V15.5L12 22L2 15.5V8.5L12 2Z" stroke="white" strokeWidth="2" strokeLinejoin="round"/>
                   <path d="M12 8L18 11.5V16.5L12 20L6 16.5V11.5L12 8Z" stroke="white" strokeWidth="1.5" strokeLinejoin="round"/>
@@ -52,7 +52,7 @@ export default function Home() {
                 DataSwap
               </h1>
             </div>
-            <h2 className="text-2xl md:text-3xl font-semibold mb-6 text-cyan-300">
+            <h2 className="text-2xl md:text-3xl font-semibold mb-6 text-green-300">
               Decentralized Data Exchange
             </h2>
             <p className="text-xl text-white mb-8 max-w-3xl mx-auto leading-relaxed">

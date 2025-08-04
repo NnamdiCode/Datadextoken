@@ -2,7 +2,7 @@
 
 🚀 **A revolutionary platform for tokenizing and trading data on the Irys blockchain**
 
-![DataSwap Banner](https://via.placeholder.com/800x200/0B1426/40E0D0?text=DataSwap+-+Decentralized+Data+Exchange)
+![DataSwap Banner](https://via.placeholder.com/800x200/0B1426/00D85A?text=DataSwap+-+Decentralized+Data+Exchange)
 
 ## 🌟 Features
 

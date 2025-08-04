@@ -42,7 +42,7 @@ export default function Layout({ children }: LayoutProps) {
                   whileHover={{ scale: 1.05 }}
                 >
                   <div className="flex items-center space-x-3">
-                    <div className="w-8 h-8 bg-gradient-to-br from-cyan-400 to-blue-600 rounded-lg flex items-center justify-center relative overflow-hidden">
+                    <div className="w-8 h-8 bg-gradient-to-br from-green-400 to-emerald-600 rounded-lg flex items-center justify-center relative overflow-hidden">
                       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" className="relative z-10">
                         <path d="M12 2L22 8.5V15.5L12 22L2 15.5V8.5L12 2Z" stroke="white" strokeWidth="2" strokeLinejoin="round"/>
                         <path d="M12 8L18 11.5V16.5L12 20L6 16.5V11.5L12 8Z" stroke="white" strokeWidth="1.5" strokeLinejoin="round"/>
