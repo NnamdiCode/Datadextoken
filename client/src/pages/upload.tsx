@@ -151,11 +151,11 @@ export default function UploadPage() {
     if (e.target.files && e.target.files[0]) {
       const selectedFile = e.target.files[0];
       
-      // Check file size (500MB limit)
-      if (selectedFile.size > 500 * 1024 * 1024) {
+      // Check file size (100MB limit)
+      if (selectedFile.size > 100 * 1024 * 1024) {
         toast({ 
           title: 'File too large', 
-          description: 'Maximum file size is 500MB',
+          description: 'Maximum file size is 100MB',
           variant: 'destructive'
         });
         return;
@@ -317,7 +317,7 @@ export default function UploadPage() {
                     Drag and drop your file here
                   </p>
                   <p className="text-sm text-gray-400 mt-1">
-                    or click to browse (max 500MB)
+                    or click to browse (max 100MB)
                   </p>
                   <p className="text-xs text-gray-500 mt-2">
                     Supported: TXT, JSON, CSV, PDF, Images, Audio, Video, Documents, Archives
@@ -408,6 +408,55 @@ export default function UploadPage() {
                 </select>
                 <p className="text-xs text-gray-400 mt-1">
                   Category affects token pricing. Structured data types command higher prices.
+                </p>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-1">
+                  Token Image (Optional)
+                </label>
+                <div 
+                  className={`border-2 border-dashed rounded-lg p-4 text-center transition-colors cursor-pointer ${
+                    imageFile ? 'border-green-500/50 bg-green-500/5' : 'border-white/20 hover:border-white/30'
+                  }`}
+                  onClick={() => document.getElementById('image-upload')?.click()}
+                >
+                  <input
+                    id="image-upload"
+                    type="file"
+                    className="hidden"
+                    onChange={handleImageChange}
+                    accept="image/*"
+                  />
+                  
+                  {imageFile ? (
+                    <div className="flex items-center justify-center space-x-3">
+                      <Image size={20} className="text-green-400" />
+                      <div className="text-left">
+                        <p className="text-sm font-medium text-white">{imageFile.name}</p>
+                        <p className="text-xs text-gray-400">
+                          {(imageFile.size / 1024 / 1024).toFixed(2)} MB
+                        </p>
+                      </div>
+                      <button 
+                        className="text-red-400 hover:text-red-300 transition-colors"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setImageFile(null);
+                        }}
+                      >
+                        <X size={16} />
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="flex items-center justify-center space-x-2">
+                      <Image size={20} className="text-gray-400" />
+                      <span className="text-sm text-gray-400">Click to add token image (max 10MB)</span>
+                    </div>
+                  )}
+                </div>
+                <p className="text-xs text-gray-400 mt-1">
+                  Add a visual representation for your data token. Supports JPG, PNG, GIF, WebP, SVG.
                 </p>
               </div>
               

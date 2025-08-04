@@ -8,19 +8,32 @@ import { irysService } from "./services/irys";
 import { contractService } from "./services/contracts";
 import { uploadRequestSchema, tradeRequestSchema } from "@shared/schema";
 
-// Configure multer for file uploads
+// Configure multer for file uploads with 100MB limit
 const upload = multer({
   dest: "uploads/",
   limits: {
-    fileSize: 500 * 1024 * 1024, // 500MB limit
+    fileSize: 100 * 1024 * 1024, // 100MB limit
   },
   fileFilter: (req, file, cb) => {
-    // Allow most file types but filter out executables
-    const allowedExtensions = /\.(txt|json|csv|pdf|png|jpg|jpeg|gif|mp3|mp4|doc|docx|xls|xlsx|zip)$/i;
-    if (allowedExtensions.test(file.originalname)) {
-      cb(null, true);
+    // For data files, allow most file types but filter out executables
+    if (file.fieldname === 'file') {
+      const allowedExtensions = /\.(txt|json|csv|pdf|png|jpg|jpeg|gif|mp3|mp4|doc|docx|xls|xlsx|zip|svg|webp|bmp|tiff|psd|ai|eps|raw|mov|avi|wmv|flv|webm|mkv|m4v|3gp|wav|aac|flac|ogg|wma|m4a|sql|db|xml|yaml|yml|md|rtf|odt|ods|odp|ppt|pptx|pages|numbers|key|sketch|fig|xd|blend|obj|fbx|dae|3ds|max|maya|dwg|dxf|step|iges|stl|ply|tar|gz|rar|7z|bz2|xz|tar\.gz|tar\.bz2)$/i;
+      if (allowedExtensions.test(file.originalname)) {
+        cb(null, true);
+      } else {
+        cb(new Error("File type not allowed for data files"));
+      }
+    }
+    // For image files, restrict to image formats only
+    else if (file.fieldname === 'image') {
+      const allowedImageTypes = /\.(jpg|jpeg|png|gif|webp|svg|bmp|tiff)$/i;
+      if (allowedImageTypes.test(file.originalname)) {
+        cb(null, true);
+      } else {
+        cb(new Error("Only image files (JPG, PNG, GIF, WebP, SVG, BMP, TIFF) are allowed for token images"));
+      }
     } else {
-      cb(new Error("File type not allowed"));
+      cb(new Error("Invalid field name"));
     }
   },
 });
