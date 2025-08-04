@@ -211,16 +211,9 @@ export default function Trade() {
             <div className="p-4 border-b border-white/10">
               <div className="flex space-x-2">
                 <button 
-                  className={tabClass('swap')}
-                  onClick={() => setSelectedTab('swap')}
+                  className="px-4 py-2 text-sm font-medium rounded-md transition-colors bg-white/10 text-white"
                 >
                   Swap
-                </button>
-                <button 
-                  className={tabClass('pool')}
-                  onClick={() => setSelectedTab('pool')}
-                >
-                  Liquidity
                 </button>
               </div>
             </div>
