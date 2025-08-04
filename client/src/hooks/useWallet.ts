@@ -190,15 +190,26 @@ export function useWallet() {
         setIsConnecting(true);
         setNetworkError(null);
         
-        const provider = new ethers.BrowserProvider(window.ethereum);
+        // Force window.ethereum to be available
+        const ethereum = window.ethereum;
+        
+        // Request account access first
+        const accounts = await ethereum.request({
+          method: "eth_requestAccounts",
+        });
 
-        // Request account access
-        await provider.send("eth_requestAccounts", []);
+        if (!accounts || accounts.length === 0) {
+          throw new Error("No accounts returned from wallet");
+        }
 
+        // Create provider after getting accounts
+        const provider = new ethers.BrowserProvider(ethereum);
         const network = await provider.getNetwork();
         const currentChainId = '0x' + network.chainId.toString(16);
         const signer = await provider.getSigner();
         const address = await signer.getAddress();
+
+        console.log("Wallet connected:", { address, currentChainId });
 
         setAccount(address);
         setIsConnected(true);
@@ -210,10 +221,20 @@ export function useWallet() {
         // Show network warning if not on Irys
         if (currentChainId !== IRYS_NETWORK_CONFIG.chainId && currentChainId !== IRYS_MAINNET_CONFIG.chainId) {
           setNetworkError('Connected to unsupported network. Please switch to Irys Network.');
+        } else {
+          setNetworkError(null);
         }
       } catch (error: any) {
         console.error("Error connecting wallet:", error);
-        setNetworkError('Failed to connect wallet: ' + error.message);
+        
+        // Handle specific error cases
+        if (error.code === 4001) {
+          setNetworkError('Connection rejected by user');
+        } else if (error.code === -32002) {
+          setNetworkError('Connection request already pending in wallet');
+        } else {
+          setNetworkError('Failed to connect wallet: ' + (error.message || 'Unknown error'));
+        }
         throw error;
       } finally {
         setIsConnecting(false);

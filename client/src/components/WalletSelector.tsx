@@ -30,22 +30,18 @@ export default function WalletSelector({ isOpen, onClose }: WalletSelectorProps)
       description: 'The most popular Ethereum wallet',
       isInstalled: () => !!(window as any).ethereum?.isMetaMask,
       connect: async () => {
-        // Add retry logic and better error handling for MetaMask
-        let retryCount = 0;
-        const maxRetries = 3;
+        console.log("Attempting MetaMask connection...");
         
-        while (retryCount < maxRetries) {
-          try {
-            await connectMetaMask();
-            break; // Success, exit retry loop
-          } catch (error: any) {
-            retryCount++;
-            if (retryCount >= maxRetries) {
-              throw error; // Throw the last error after all retries
-            }
-            // Wait before retrying
-            await new Promise(resolve => setTimeout(resolve, 500));
-          }
+        if (!(window as any).ethereum?.isMetaMask) {
+          throw new Error('MetaMask not detected. Please install MetaMask extension.');
+        }
+        
+        try {
+          await connectMetaMask();
+          console.log("MetaMask connection successful");
+        } catch (error: any) {
+          console.error("MetaMask connection failed:", error);
+          throw new Error(`MetaMask connection failed: ${error.message}`);
         }
       },
       installUrl: 'https://metamask.io/download/'
@@ -57,26 +53,18 @@ export default function WalletSelector({ isOpen, onClose }: WalletSelectorProps)
       description: 'Connect with Coinbase Wallet',
       isInstalled: () => !!(window as any).ethereum?.isCoinbaseWallet,
       connect: async () => {
-        // For Coinbase Wallet, we can still use the same ethereum provider
-        if ((window as any).ethereum?.isCoinbaseWallet) {
-          // Add retry logic for Coinbase Wallet too
-          let retryCount = 0;
-          const maxRetries = 3;
-          
-          while (retryCount < maxRetries) {
-            try {
-              await connectMetaMask();
-              break;
-            } catch (error: any) {
-              retryCount++;
-              if (retryCount >= maxRetries) {
-                throw error;
-              }
-              await new Promise(resolve => setTimeout(resolve, 500));
-            }
-          }
-        } else {
-          throw new Error('Coinbase Wallet not detected');
+        console.log("Attempting Coinbase Wallet connection...");
+        
+        if (!(window as any).ethereum?.isCoinbaseWallet) {
+          throw new Error('Coinbase Wallet not detected. Please install Coinbase Wallet extension.');
+        }
+        
+        try {
+          await connectMetaMask();
+          console.log("Coinbase Wallet connection successful");
+        } catch (error: any) {
+          console.error("Coinbase Wallet connection failed:", error);
+          throw new Error(`Coinbase Wallet connection failed: ${error.message}`);
         }
       },
       installUrl: 'https://www.coinbase.com/wallet'
@@ -101,21 +89,18 @@ export default function WalletSelector({ isOpen, onClose }: WalletSelectorProps)
       description: 'Use any injected wallet provider',
       isInstalled: () => !!(window as any).ethereum,
       connect: async () => {
-        // Add retry logic for any injected wallet
-        let retryCount = 0;
-        const maxRetries = 3;
+        console.log("Attempting Browser Wallet connection...");
         
-        while (retryCount < maxRetries) {
-          try {
-            await connectMetaMask();
-            break;
-          } catch (error: any) {
-            retryCount++;
-            if (retryCount >= maxRetries) {
-              throw error;
-            }
-            await new Promise(resolve => setTimeout(resolve, 500));
-          }
+        if (!(window as any).ethereum) {
+          throw new Error('No wallet detected. Please install a Web3 wallet like MetaMask.');
+        }
+        
+        try {
+          await connectMetaMask();
+          console.log("Browser Wallet connection successful");
+        } catch (error: any) {
+          console.error("Browser Wallet connection failed:", error);
+          throw new Error(`Wallet connection failed: ${error.message}`);
         }
       },
       installUrl: ''
@@ -136,7 +121,18 @@ export default function WalletSelector({ isOpen, onClose }: WalletSelectorProps)
       onClose();
     } catch (error: any) {
       console.error(`Failed to connect to ${wallet.name}:`, error);
-      alert(`Failed to connect to ${wallet.name}: ${error.message}`);
+      
+      // Better error messaging for users
+      let userMessage = error.message;
+      if (error.code === 4001) {
+        userMessage = 'Connection was rejected. Please try again and accept the connection request.';
+      } else if (error.code === -32002) {
+        userMessage = 'A connection request is already pending in your wallet. Please check your wallet.';
+      } else if (error.message.includes('User denied')) {
+        userMessage = 'Connection was denied. Please accept the connection request in your wallet.';
+      }
+      
+      alert(`Failed to connect to ${wallet.name}: ${userMessage}`);
     } finally {
       setIsConnecting(null);
     }
