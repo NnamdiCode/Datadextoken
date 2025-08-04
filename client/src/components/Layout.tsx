@@ -41,9 +41,19 @@ export default function Layout({ children }: LayoutProps) {
                   className="flex items-center cursor-pointer"
                   whileHover={{ scale: 1.05 }}
                 >
-                  <h1 className="text-xl font-bold text-primary">
-                    DataSwap
-                  </h1>
+                  <div className="flex items-center space-x-3">
+                    <div className="w-8 h-8 bg-gradient-to-br from-cyan-400 to-blue-600 rounded-lg flex items-center justify-center relative overflow-hidden">
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" className="relative z-10">
+                        <path d="M12 2L22 8.5V15.5L12 22L2 15.5V8.5L12 2Z" stroke="white" strokeWidth="2" strokeLinejoin="round"/>
+                        <path d="M12 8L18 11.5V16.5L12 20L6 16.5V11.5L12 8Z" stroke="white" strokeWidth="1.5" strokeLinejoin="round"/>
+                        <circle cx="12" cy="12" r="2" fill="white"/>
+                      </svg>
+                      <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/20 to-transparent animate-shimmer"></div>
+                    </div>
+                    <h1 className="text-xl font-bold text-primary">
+                      IrysDEX
+                    </h1>
+                  </div>
                   <span className="ml-3 text-sm bg-primary/20 text-primary px-2 py-1 rounded-full">
                     Beta
                   </span>

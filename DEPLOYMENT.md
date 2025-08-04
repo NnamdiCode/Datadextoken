@@ -1,4 +1,4 @@
-# DataSwap Deployment Guide
+# IrysDEX Deployment Guide
 
 ## GitHub Repository Setup
 
@@ -6,12 +6,12 @@
 ```bash
 git init
 git add .
-git commit -m "Initial commit: DataSwap - Decentralized Data Exchange Platform"
+git commit -m "Initial commit: IrysDEX - Decentralized Data Exchange Platform"
 ```
 
 ### 2. Connect to Your GitHub Repository
 ```bash
-git remote add origin https://github.com/yourusername/dataswap.git
+git remote add origin https://github.com/yourusername/irysdex.git
 git branch -M main
 git push -u origin main
 ```

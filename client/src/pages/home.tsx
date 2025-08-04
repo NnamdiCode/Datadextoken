@@ -39,12 +39,25 @@ export default function Home() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
           >
-            <h1 className="text-5xl md:text-6xl font-bold mb-6 shiny-text">
-              Tokenize & Trade Your Data
-            </h1>
+            <div className="flex items-center justify-center mb-6">
+              <div className="w-16 h-16 bg-gradient-to-br from-cyan-400 to-blue-600 rounded-2xl flex items-center justify-center mr-4 relative overflow-hidden shadow-2xl">
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" className="relative z-10">
+                  <path d="M12 2L22 8.5V15.5L12 22L2 15.5V8.5L12 2Z" stroke="white" strokeWidth="2" strokeLinejoin="round"/>
+                  <path d="M12 8L18 11.5V16.5L12 20L6 16.5V11.5L12 8Z" stroke="white" strokeWidth="1.5" strokeLinejoin="round"/>
+                  <circle cx="12" cy="12" r="2" fill="white"/>
+                </svg>
+                <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/30 to-transparent animate-shimmer"></div>
+              </div>
+              <h1 className="text-5xl md:text-6xl font-bold shiny-text">
+                IrysDEX
+              </h1>
+            </div>
+            <h2 className="text-2xl md:text-3xl font-semibold mb-6 text-cyan-300">
+              Decentralized Data Exchange
+            </h2>
             <p className="text-xl text-white mb-8 max-w-3xl mx-auto leading-relaxed">
-              Upload your data to the Irys blockchain, receive unique tokens, and trade them on our decentralized exchange. 
-              Turn your data into liquid assets.
+              Upload your data to the Irys blockchain, receive unique tokens, and trade them on our automated market maker. 
+              Turn your data into liquid assets with permanent storage and verifiable ownership.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link href="/upload">

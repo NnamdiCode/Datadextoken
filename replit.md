@@ -1,8 +1,8 @@
-# DataSwap - Decentralized Data Exchange
+# IrysDEX - Decentralized Data Exchange
 
 ## Overview
 
-DataSwap is a decentralized data exchange platform built on the Irys blockchain that allows users to tokenize their data and trade it through an automated market maker (AMM). The platform combines blockchain technology with data monetization, enabling users to upload data to Irys, receive ERC-20 tokens representing ownership, and trade these tokens on an integrated DEX.
+IrysDEX is a decentralized data exchange platform built on the Irys blockchain that allows users to tokenize their data and trade it through an automated market maker (AMM). The platform combines blockchain technology with data monetization, enabling users to upload data to Irys, receive ERC-20 tokens representing ownership, and trade these tokens on an integrated DEX.
 
 ## User Preferences
 
