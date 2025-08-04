@@ -62,49 +62,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Features Section */}
-      <section className="py-16 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold mb-4 shiny-text">Why Choose DataSwap?</h2>
-            <p className="text-gray-300 max-w-2xl mx-auto">
-              Built on Irys blockchain for fast, secure, and cost-effective data tokenization
-            </p>
-          </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <GlassCard animateOnHover className="p-6 text-center">
-              <div className="w-12 h-12 bg-blue-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Zap className="text-blue-400" size={24} />
-              </div>
-              <h3 className="text-xl font-semibold mb-2 gradient-text">Lightning Fast</h3>
-              <p className="text-gray-300">
-                100,000 TPS on Irys blockchain - 6,000x faster than traditional storage solutions
-              </p>
-            </GlassCard>
 
-            <GlassCard animateOnHover className="p-6 text-center">
-              <div className="w-12 h-12 bg-purple-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Shield className="text-purple-400" size={24} />
-              </div>
-              <h3 className="text-xl font-semibold mb-2 gradient-text">Secure & Decentralized</h3>
-              <p className="text-gray-300">
-                Your data is cryptographically secured and permanently stored on the blockchain
-              </p>
-            </GlassCard>
-
-            <GlassCard animateOnHover className="p-6 text-center">
-              <div className="w-12 h-12 bg-green-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Globe className="text-green-400" size={24} />
-              </div>
-              <h3 className="text-xl font-semibold mb-2 gradient-text">Global Marketplace</h3>
-              <p className="text-gray-300">
-                Trade your data tokens with users worldwide through our automated market maker
-              </p>
-            </GlassCard>
-          </div>
-        </div>
-      </section>
 
       {/* Recent Tokens */}
       <section className="py-16 px-4 sm:px-6 lg:px-8">
