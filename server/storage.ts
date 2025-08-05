@@ -362,5 +362,8 @@ export class MemStorage implements IStorage {
   }
 }
 
-// Use only in-memory storage for blockchain integration
-export const storage = new MemStorage();
+// Import DatabaseStorage for production deployment
+import { DatabaseStorage } from './database-storage';
+
+// Use database storage for production deployment
+export const storage = new DatabaseStorage();

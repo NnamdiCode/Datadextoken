@@ -161,9 +161,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         fileName: dataFile.originalname,
         imageUrl,
         totalSupply: '1000000000', // 1 billion tokens
-        currentPrice: parseFloat(calculatedPrice) || 0.005, // Use calculated price
-        volume24h: 0,
-        priceChange24h: 0,
+        currentPrice: (parseFloat(calculatedPrice) || 0.005).toString(), // Use calculated price
+        volume24h: "0",
+        priceChange24h: "0",
       };
 
       // Save token to storage
@@ -416,7 +416,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         amountOut: amountOut.toString(),
         traderAddress,
         transactionHash: tradeTransaction.transactionId,
-        pricePerToken: parseFloat(amountOut) / parseFloat(amountIn),
+        pricePerToken: (parseFloat(amountOut) / parseFloat(amountIn)).toString(),
         feeAmount: (parseFloat(amountIn) * 0.003).toString()
       });
       
@@ -455,7 +455,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         // Upload transactions
         ...userTokens.map(token => ({
           id: token.irysTransactionId,
-          timestamp: Math.floor(token.createdAt.getTime() / 1000),
+          timestamp: Math.floor((token.createdAt || new Date()).getTime() / 1000),
           type: 'upload',
           amount: '0.005',
           status: 'confirmed',
@@ -469,7 +469,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         // Trade transactions
         ...trades.map(trade => ({
           id: trade.transactionHash,
-          timestamp: Math.floor(trade.executedAt.getTime() / 1000),
+          timestamp: Math.floor((trade.executedAt || new Date()).getTime() / 1000),
           type: 'trade',
           amount: trade.amountIn,
           status: 'confirmed',
