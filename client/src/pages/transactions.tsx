@@ -77,11 +77,11 @@ export default function Transactions() {
 
   if (!isConnected) {
     return (
-      <div className="min-h-screen bg-background p-4">
-        <div className="max-w-4xl mx-auto pt-8">
+      <div className="min-h-screen bg-background px-4 sm:px-6 lg:px-8 py-8 md:py-12">
+        <div className="max-w-4xl mx-auto">
           <div className="text-center py-12">
-            <h1 className="text-3xl font-bold mb-4">Transaction History</h1>
-            <p className="text-gray-400 mb-8">Connect your wallet to view your Irys blockchain transactions</p>
+            <h1 className="text-2xl md:text-3xl font-bold mb-4">Transaction History</h1>
+            <p className="text-gray-400 mb-8 max-w-2xl mx-auto">Connect your wallet to view your Irys blockchain transactions</p>
             <Button>Connect Wallet</Button>
           </div>
         </div>
@@ -90,11 +90,11 @@ export default function Transactions() {
   }
 
   return (
-    <div className="min-h-screen bg-background p-4">
-      <div className="max-w-6xl mx-auto pt-8">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold mb-2">Transaction History</h1>
-          <p className="text-gray-400">Your Irys blockchain transactions and data interactions</p>
+    <div className="min-h-screen bg-background px-4 sm:px-6 lg:px-8 py-8 md:py-12">
+      <div className="max-w-6xl mx-auto">
+        <div className="text-center mb-8">
+          <h1 className="text-2xl md:text-3xl font-bold mb-2">Transaction History</h1>
+          <p className="text-gray-400 max-w-2xl mx-auto">Your Irys blockchain transactions and data interactions</p>
         </div>
 
         {/* Filter tabs */}

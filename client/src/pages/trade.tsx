@@ -216,12 +216,10 @@ export default function Trade() {
 
 
   return (
-    <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-      <div className="flex justify-between items-center mb-8">
-        <div>
-          <h1 className="text-3xl font-bold mb-2 shiny-text">Trade Data Tokens</h1>
-          <p className="text-white">Swap your data tokens using our automated market maker</p>
-        </div>
+    <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
+      <div className="text-center mb-8">
+        <h1 className="text-2xl md:text-3xl font-bold mb-2 shiny-text">Trade Data Tokens</h1>
+        <p className="text-gray-200 max-w-2xl mx-auto">Swap your data tokens using our automated market maker</p>
       </div>
 
       {/* Trading Chart - Full Width TradingView Style */}

@@ -241,16 +241,16 @@ export default function UploadPage() {
   ];
 
   return (
-    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-      <div className="text-center mb-10">
-        <h1 className="text-3xl font-bold mb-4">Upload & Tokenize Your Data</h1>
-        <p className="text-gray-300 max-w-2xl mx-auto">
+    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
+      <div className="text-center mb-8 md:mb-10">
+        <h1 className="text-2xl md:text-3xl font-bold mb-4">Upload & Tokenize Your Data</h1>
+        <p className="text-gray-300 max-w-2xl mx-auto px-4">
           Convert your data into tradable tokens on the Irys blockchain. Set metadata, pay a small fee, and receive a unique token.
         </p>
       </div>
       
       {/* Steps progress */}
-      <div className="flex justify-between items-center mb-10 px-2">
+      <div className="flex justify-between items-center mb-8 md:mb-10 px-2">
         {[1, 2, 3, 4].map((i) => (
           <div key={i} className="flex flex-col items-center relative">
             <div className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-medium transition-colors ${
@@ -273,8 +273,8 @@ export default function UploadPage() {
       
       <GlassCard className="mb-8">
         {step === 1 && (
-          <div className="p-6">
-            <h2 className="text-xl font-medium mb-4">Select Your Data File</h2>
+          <div className="p-4 md:p-6">
+            <h2 className="text-lg md:text-xl font-medium mb-4 text-center">Select Your Data File</h2>
             
             <div 
               className={`border-2 border-dashed rounded-lg p-8 text-center transition-colors cursor-pointer ${
@@ -340,8 +340,8 @@ export default function UploadPage() {
         )}
         
         {step === 2 && (
-          <div className="p-6">
-            <h2 className="text-xl font-medium mb-4">Configure Your Data Token</h2>
+          <div className="p-4 md:p-6">
+            <h2 className="text-lg md:text-xl font-medium mb-4 text-center">Configure Your Data Token</h2>
             
             <div className="space-y-6">
               <div>

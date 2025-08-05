@@ -161,11 +161,11 @@ export default function Liquidity() {
 
   if (!isConnected) {
     return (
-      <div className="min-h-screen bg-background p-4">
-        <div className="max-w-4xl mx-auto pt-8">
+      <div className="min-h-screen bg-background px-4 sm:px-6 lg:px-8 py-8 md:py-12">
+        <div className="max-w-4xl mx-auto">
           <div className="text-center py-12">
-            <h1 className="text-3xl font-bold mb-4">Liquidity Pools</h1>
-            <p className="text-gray-400 mb-8">Connect your wallet to provide liquidity and earn fees</p>
+            <h1 className="text-2xl md:text-3xl font-bold mb-4">Liquidity Pools</h1>
+            <p className="text-gray-400 mb-8 max-w-2xl mx-auto">Connect your wallet to provide liquidity and earn fees</p>
             <Button>Connect Wallet</Button>
           </div>
         </div>
@@ -174,11 +174,11 @@ export default function Liquidity() {
   }
 
   return (
-    <div className="min-h-screen bg-background p-4">
-      <div className="max-w-6xl mx-auto pt-8">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold mb-2">Liquidity Pools</h1>
-          <p className="text-gray-400">Provide liquidity to earn trading fees on the Irys AMM</p>
+    <div className="min-h-screen bg-background px-4 sm:px-6 lg:px-8 py-8 md:py-12">
+      <div className="max-w-6xl mx-auto">
+        <div className="text-center mb-8">
+          <h1 className="text-2xl md:text-3xl font-bold mb-2">Liquidity Pools</h1>
+          <p className="text-gray-400 max-w-2xl mx-auto">Provide liquidity to earn trading fees on the Irys AMM</p>
         </div>
 
 

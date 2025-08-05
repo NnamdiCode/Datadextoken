@@ -32,7 +32,7 @@ export default function Home() {
       <div className="floating-orb"></div>
       
       {/* Hero Section */}
-      <section className="py-20 px-4 sm:px-6 lg:px-8 relative">
+      <section className="py-12 md:py-20 px-4 sm:px-6 lg:px-8 relative">
         <div className="max-w-7xl mx-auto text-center">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -55,18 +55,18 @@ export default function Home() {
             <h2 className="text-2xl md:text-3xl font-semibold mb-6 text-green-300">
               Decentralized Data Exchange
             </h2>
-            <p className="text-xl text-white mb-8 max-w-3xl mx-auto leading-relaxed">
+            <p className="text-lg md:text-xl text-gray-200 mb-8 max-w-3xl mx-auto leading-relaxed px-4">
               Upload your data to the Irys blockchain, receive unique tokens, and trade them on our automated market maker. 
               Turn your data into liquid assets with permanent storage and verifiable ownership.
             </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
               <Link href="/upload">
-                <Button size="lg" icon={<Upload size={20} />} className="glossy-button">
+                <Button size="lg" icon={<Upload size={20} />} className="glossy-button w-full sm:w-auto">
                   Upload Data
                 </Button>
               </Link>
               <Link href="/trade">
-                <Button variant="outline" size="lg" icon={<TrendingUp size={20} />} className="glossy-button">
+                <Button variant="outline" size="lg" icon={<TrendingUp size={20} />} className="glossy-button w-full sm:w-auto">
                   Start Trading
                 </Button>
               </Link>
@@ -78,12 +78,12 @@ export default function Home() {
 
 
       {/* Recent Tokens */}
-      <section className="py-16 px-4 sm:px-6 lg:px-8">
+      <section className="py-12 md:py-16 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
-          <div className="flex justify-between items-center mb-8">
-            <h2 className="text-2xl font-bold text-white">Recently Tokenized Data</h2>
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
+            <h2 className="text-xl md:text-2xl font-bold text-white">Recently Tokenized Data</h2>
             <Link href="/trade">
-              <Button variant="outline" size="sm" icon={<ArrowRight size={16} />}>
+              <Button variant="outline" size="sm" icon={<ArrowRight size={16} />} className="w-full sm:w-auto">
                 View All
               </Button>
             </Link>
@@ -94,11 +94,11 @@ export default function Home() {
               {recentTokens.tokens.map((token: any) => (
                 <GlassCard key={token.id} animateOnHover className="p-6">
                   <div className="flex justify-between items-start mb-4">
-                    <div>
-                      <h3 className="font-semibold text-lg mb-1">{token.name}</h3>
+                    <div className="flex-1 min-w-0">
+                      <h3 className="font-semibold text-base md:text-lg mb-1 truncate">{token.name}</h3>
                       <p className="text-sm text-gray-400">{token.symbol}</p>
                     </div>
-                    <div className="text-right">
+                    <div className="text-right flex-shrink-0 ml-4">
                       <p className="text-sm text-blue-400 font-medium">{token.currentPrice.toFixed(3)} IRYS</p>
                       <p className="text-xs text-gray-400">
                         Cap: {((token.currentPrice * 1000000000) / 1000000).toFixed(1)}M
@@ -148,9 +148,9 @@ export default function Home() {
               ))}
             </div>
           ) : (
-            <div className="text-center py-12 text-gray-400">
-              <Upload size={48} className="mx-auto mb-4 opacity-50" />
-              <p>No tokens found. Be the first to upload data!</p>
+            <div className="text-center py-12 px-4">
+              <Upload size={48} className="mx-auto mb-4 opacity-50 text-gray-400" />
+              <p className="text-gray-400 text-lg">No tokens found. Be the first to upload data!</p>
             </div>
           )}
         </div>
@@ -159,21 +159,21 @@ export default function Home() {
 
 
       {/* CTA Section */}
-      <section className="py-20 px-4 sm:px-6 lg:px-8">
+      <section className="py-12 md:py-20 px-4 sm:px-6 lg:px-8">
         <div className="max-w-4xl mx-auto text-center">
-          <GlassCard className="p-12 bg-card border-primary/30">
-            <h2 className="text-3xl font-bold mb-6">Ready to Get Started?</h2>
-            <p className="text-xl text-gray-300 mb-8">
+          <GlassCard className="p-8 md:p-12 bg-card border-primary/30">
+            <h2 className="text-2xl md:text-3xl font-bold mb-6">Ready to Get Started?</h2>
+            <p className="text-lg md:text-xl text-gray-300 mb-8 max-w-2xl mx-auto">
               Join the decentralized data economy. Upload your first dataset and start earning.
             </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
               <Link href="/upload">
-                <Button size="lg" icon={<Upload size={20} />}>
+                <Button size="lg" icon={<Upload size={20} />} className="w-full sm:w-auto">
                   Upload Your First File
                 </Button>
               </Link>
               <Link href="/trade">
-                <Button variant="outline" size="lg" icon={<TrendingUp size={20} />}>
+                <Button variant="outline" size="lg" icon={<TrendingUp size={20} />} className="w-full sm:w-auto">
                   Explore Marketplace
                 </Button>
               </Link>

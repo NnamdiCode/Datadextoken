@@ -144,7 +144,7 @@ export default function Layout({ children }: LayoutProps) {
       <NetworkStatus />
 
       {/* Main content with proper spacing */}
-      <main className="pt-26">
+      <main className="pt-32 min-h-screen">
         {children}
       </main>
     </div>
