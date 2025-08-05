@@ -3,6 +3,7 @@ import { Wallet, ChevronDown, LogOut, Copy, ExternalLink, Coins, Database, Alert
 import Button from './Button';
 import GlassCard from './GlassCard';
 import WalletSelector from './WalletSelector';
+import IrysWalletManager from './IrysWalletManager';
 import { useWallet } from '../hooks/useWallet';
 import { useToast } from '../hooks/use-toast';
 

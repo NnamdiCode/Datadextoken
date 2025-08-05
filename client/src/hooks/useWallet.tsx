@@ -1,18 +1,21 @@
 import { useState, useEffect, createContext, useContext, ReactNode } from "react";
 import { ethers } from "ethers";
 
-// Irys Network Configuration
-export const IRYS_NETWORK_CONFIG = {
+// Enhanced Irys Network Configuration (from Irys POC)
+export const IRYS_TESTNET_CONFIG = {
   chainId: '0x4F6', // 1270 in hex
-  chainName: 'Irys Devnet',
+  chainName: 'Irys Testnet',
+  rpcUrls: ['https://testnet-rpc.irys.xyz/v1/execution-rpc'],
   nativeCurrency: {
     name: 'IRYS',
     symbol: 'IRYS',
-    decimals: 18,
+    decimals: 18
   },
-  rpcUrls: ['https://rpc.devnet.irys.network'],
-  blockExplorerUrls: ['https://explorer.devnet.irys.network'],
+  blockExplorerUrls: ['https://testnet-explorer.irys.xyz/']
 };
+
+// Keep backward compatibility alias
+export const IRYS_NETWORK_CONFIG = IRYS_TESTNET_CONFIG;
 
 export const IRYS_MAINNET_CONFIG = {
   chainId: '0x4F7', // 1271 in hex  

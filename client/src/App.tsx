@@ -10,6 +10,7 @@ import Upload from "./pages/upload";
 import Trade from "./pages/trade";
 import Transactions from "./pages/transactions";
 import Liquidity from "./pages/liquidity";
+import WalletPage from "./pages/WalletPage";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -21,6 +22,7 @@ function Router() {
         <Route path="/trade" component={Trade} />
         <Route path="/transactions" component={Transactions} />
         <Route path="/liquidity" component={Liquidity} />
+        <Route path="/wallet" component={WalletPage} />
         <Route component={NotFound} />
       </Switch>
     </Layout>
