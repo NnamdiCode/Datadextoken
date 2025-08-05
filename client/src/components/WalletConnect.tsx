@@ -106,7 +106,11 @@ export default function WalletConnect() {
       <div className="flex flex-col items-end space-y-2">
         <Button
           onClick={() => {
+            
+            console.log('🔗 Connect Wallet button clicked');
+            
             if (typeof window === 'undefined') {
+              console.log('❌ Window is undefined');
               toast({ 
                 title: 'Wallet not available', 
                 description: 'Please access this site from a Web3-enabled browser',
@@ -115,17 +119,33 @@ export default function WalletConnect() {
               return;
             }
             
-            if (!window.ethereum) {
+            console.log('✅ Window is available, checking for ethereum...');
+            console.log('Ethereum object:', (window as any).ethereum ? 'Found' : 'Not found');
+            
+            if (!(window as any).ethereum) {
+              console.log('❌ No ethereum object found');
               toast({ 
                 title: 'No wallet detected', 
                 description: 'Please install MetaMask or another Web3 wallet extension',
                 variant: 'destructive' 
               });
+              
+              // Try direct MetaMask connection as fallback
+              if (confirm('Would you like to try connecting directly with MetaMask?')) {
+                connect().catch(console.error);
+              }
               return;
             }
             
+            console.log('✅ Ethereum found, opening wallet selector...');
             // Always show wallet selector to let user choose their preferred EVM wallet
             setIsWalletSelectorOpen(true);
+            
+            // Add backup toast to ensure user knows selector should open
+            toast({
+              title: 'Wallet Selector Opening',
+              description: 'Choose your preferred wallet from the popup that appears.',
+            });
           }}
           disabled={isConnecting}
           icon={<Wallet size={16} />}
@@ -142,6 +162,31 @@ export default function WalletConnect() {
           <div className="text-xs text-yellow-400 bg-yellow-400/10 px-2 py-1 rounded max-w-48 text-right border border-yellow-400/20">
             No Web3 wallet detected. Install <a href="https://metamask.io/download/" target="_blank" rel="noopener noreferrer" className="underline hover:text-yellow-300">MetaMask</a> to continue.
           </div>
+        )}
+        
+        {/* Add emergency direct connect button for debugging */}
+        {typeof window !== 'undefined' && (window as any).ethereum && (
+          <Button
+            onClick={async () => {
+              console.log('🚨 Emergency Direct Connect clicked');
+              try {
+                await connect();
+                toast({ title: 'Direct connection successful!' });
+              } catch (error: any) {
+                console.error('Direct connection failed:', error);
+                toast({ 
+                  title: 'Direct connection failed', 
+                  description: error.message,
+                  variant: 'destructive' 
+                });
+              }
+            }}
+            variant="outline"
+            size="sm"
+            className="text-xs"
+          >
+            Try Direct Connect
+          </Button>
         )}
       </div>
     );
