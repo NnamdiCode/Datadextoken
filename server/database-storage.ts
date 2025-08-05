@@ -1,52 +1,95 @@
 import { db, dataTokens, trades, liquidityPools, users, irysTransactions } from "./db.js";
 import { eq, desc, like, or, and } from "drizzle-orm";
 import type { 
-  DrizzleDataToken as DataToken, 
-  DrizzleInsertDataToken as InsertDataToken, 
-  DrizzleTrade as Trade, 
-  DrizzleInsertTrade as InsertTrade, 
-  DrizzleLiquidityPool as LiquidityPool, 
-  DrizzleInsertLiquidityPool as InsertLiquidityPool, 
-  DrizzleUser as User, 
-  DrizzleInsertUser as InsertUser,
-  DrizzleIrysTransaction as IrysTransaction,
-  DrizzleInsertIrysTransaction as InsertIrysTransaction 
+  DataToken, 
+  InsertDataToken, 
+  Trade, 
+  InsertTrade, 
+  LiquidityPool, 
+  InsertLiquidityPool, 
+  User, 
+  InsertUser,
+  IrysTransaction,
+  InsertIrysTransaction 
 } from "@shared/schema";
 import type { IStorage } from "./storage.js";
 
 // Helper functions to convert database types to interface types
 function normalizeDataToken(dbToken: any): DataToken {
   return {
-    ...dbToken,
-    description: dbToken.description ?? undefined,
-    imageUrl: dbToken.imageUrl ?? undefined,
+    id: dbToken.id,
+    tokenAddress: dbToken.tokenAddress,
+    irysTransactionId: dbToken.irysTransactionId,
+    name: dbToken.name,
+    symbol: dbToken.symbol,
+    description: dbToken.description || undefined,
+    category: dbToken.category,
+    creatorAddress: dbToken.creatorAddress,
+    fileSize: dbToken.fileSize,
+    fileType: dbToken.fileType,
+    fileName: dbToken.fileName,
+    imageUrl: dbToken.imageUrl || undefined,
+    totalSupply: dbToken.totalSupply,
     currentPrice: parseFloat(dbToken.currentPrice.toString()),
     volume24h: parseFloat(dbToken.volume24h.toString()),
     priceChange24h: parseFloat(dbToken.priceChange24h.toString()),
-    createdAt: dbToken.createdAt || new Date(),
+    createdAt: new Date(dbToken.createdAt),
   };
 }
 
 function normalizeTrade(dbTrade: any): Trade {
   return {
-    ...dbTrade,
+    id: dbTrade.id,
+    fromTokenAddress: dbTrade.fromTokenAddress,
+    toTokenAddress: dbTrade.toTokenAddress,
+    amountIn: dbTrade.amountIn,
+    amountOut: dbTrade.amountOut,
+    traderAddress: dbTrade.traderAddress,
+    transactionHash: dbTrade.transactionHash,
     pricePerToken: parseFloat(dbTrade.pricePerToken.toString()),
-    executedAt: dbTrade.executedAt || new Date(),
+    feeAmount: dbTrade.feeAmount,
+    executedAt: new Date(dbTrade.executedAt),
   };
 }
 
 function normalizeLiquidityPool(dbPool: any): LiquidityPool {
   return {
-    ...dbPool,
-    createdAt: dbPool.createdAt || new Date(),
+    id: dbPool.id,
+    tokenAAddress: dbPool.tokenAAddress,
+    tokenBAddress: dbPool.tokenBAddress,
+    reserveA: dbPool.reserveA,
+    reserveB: dbPool.reserveB,
+    totalLiquidity: dbPool.totalLiquidity,
+    createdAt: new Date(dbPool.createdAt),
+  };
+}
+
+function normalizeUser(dbUser: any): User {
+  return {
+    id: dbUser.id,
+    walletAddress: dbUser.walletAddress,
+    username: dbUser.username || undefined,
+    totalUploads: dbUser.totalUploads,
+    totalTrades: dbUser.totalTrades,
+    totalVolume: parseFloat(dbUser.totalVolume.toString()),
+    joinedAt: new Date(dbUser.joinedAt),
   };
 }
 
 function normalizeIrysTransaction(dbTx: any): IrysTransaction {
   return {
-    ...dbTx,
-    blockNumber: dbTx.blockNumber ?? undefined,
-    blockHash: dbTx.blockHash ?? undefined,
+    id: dbTx.id,
+    hash: dbTx.hash,
+    fromAddress: dbTx.fromAddress,
+    toAddress: dbTx.toAddress,
+    value: dbTx.value,
+    gasUsed: dbTx.gasUsed,
+    status: dbTx.status,
+    timestamp: new Date(dbTx.timestamp),
+    type: dbTx.type,
+    data: dbTx.data,
+    blockNumber: dbTx.blockNumber || undefined,
+    blockHash: dbTx.blockHash || undefined,
   };
 }
 
@@ -210,12 +253,19 @@ export class DatabaseStorage implements IStorage {
   // Users
   async getUser(walletAddress: string): Promise<User | undefined> {
     const [user] = await db.select().from(users).where(eq(users.walletAddress, walletAddress));
-    return user;
+    if (!user) return undefined;
+    return normalizeUser(user);
   }
 
   async createUser(user: InsertUser): Promise<User> {
-    const [newUser] = await db.insert(users).values(user).returning();
-    return newUser;
+    const [newUser] = await db.insert(users).values({
+      walletAddress: user.walletAddress,
+      username: user.username,
+      totalUploads: user.totalUploads || 0,
+      totalTrades: user.totalTrades || 0,
+      totalVolume: user.totalVolume?.toString() || "0",
+    }).returning();
+    return normalizeUser(newUser);
   }
 
   async updateUserStats(walletAddress: string, totalUploads?: number, totalTrades?: number, totalVolume?: number): Promise<void> {

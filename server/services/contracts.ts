@@ -40,7 +40,7 @@ export interface ContractAddresses {
 
 export class ContractService {
   private provider: ethers.JsonRpcProvider;
-  private signer: ethers.Wallet;
+  private signer: ethers.Signer;
   private addresses: ContractAddresses;
   private contracts: {
     dataRegistry?: ethers.Contract;
