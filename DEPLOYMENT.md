@@ -27,17 +27,25 @@ The warning about `builds` existing in configuration has been resolved by:
 1. **Push your code to GitHub:**
    ```bash
    git add .
-   git commit -m "Fix Vercel deployment - frontend only with mock API fallback"
+   git commit -m "Fix Vercel deployment configuration - frontend-only"
    git push origin main
    ```
 
 2. **Deploy to Vercel:**
    - Go to [vercel.com](https://vercel.com)
    - Import your GitHub repository: `https://github.com/NnamdiCode/Datadextoken`
-   - Vercel will automatically detect Vite framework
+   - **IMPORTANT**: In build settings, override the build command to: `vite build --config vite.config.production.ts`
+   - Set output directory to: `dist/public`
    - Click "Deploy"
 
-3. **Environment Variables (Optional):**
+3. **Vercel Build Settings:**
+   Make sure these settings are configured:
+   - **Build Command**: `vite build --config vite.config.production.ts`
+   - **Output Directory**: `dist/public`
+   - **Install Command**: `npm install`
+   - **Framework**: Vite
+
+4. **Environment Variables (Optional):**
    In your Vercel dashboard, you can optionally add:
    - `VITE_USE_MOCK_API=true` (to force mock API usage)
    - `VITE_API_URL=your-backend-url` (if you deploy backend separately)
