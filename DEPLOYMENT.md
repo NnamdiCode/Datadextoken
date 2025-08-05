@@ -1,90 +1,242 @@
 # DataSwap Deployment Guide
 
-## Fixed Vercel Deployment Issues
+## 🚀 Vercel Deployment (Recommended)
 
-### Issue 1: Dynamic Require Error
-The `__require` error was caused by trying to run Node.js server code in Vercel's edge runtime. Fixed by:
-- Removed incompatible `builds` configuration
-- Switched to frontend-only deployment
-- Simplified `vercel.json` configuration
+### 1. Prepare Your Repository
 
-### Issue 2: Deprecated Builds Warning
-The warning about `builds` existing in configuration has been resolved by:
-- Removing the `builds` array from `vercel.json`
-- Using modern Vercel configuration with `buildCommand` and `outputDirectory`
-- Letting Vercel auto-detect the framework (Vite)
+```bash
+# Initialize git repository
+git init
 
-## Current Deployment Setup
+# Add all files
+git add .
 
-### Frontend-Only Deployment (Recommended)
-- Uses Vite to build the React frontend
-- Outputs to `dist/` directory
-- Static hosting on Vercel's CDN
-- No serverless functions (avoids Node.js compatibility issues)
+# Commit changes
+git commit -m "Initial DataSwap deployment"
 
-### Deployment Steps
+# Create main branch
+git branch -M main
 
-1. **Push your code to GitHub:**
-   ```bash
-   git add .
-   git commit -m "Fix Vercel deployment configuration - frontend-only"
-   git push origin main
+# Add your GitHub remote
+git remote add origin https://github.com/yourusername/dataswap.git
+
+# Push to GitHub
+git push -u origin main
+```
+
+### 2. Database Setup
+
+**Option A: Neon (Recommended)**
+1. Go to [neon.tech](https://neon.tech) and create account
+2. Create new project named "dataswap"
+3. Copy the connection string
+4. Database tables will be created automatically
+
+**Option B: Supabase**
+1. Go to [supabase.com](https://supabase.com) and create project
+2. Get PostgreSQL connection string from Settings > Database
+3. Use the connection string in your environment variables
+
+**Option C: Railway/PlanetScale**
+1. Create PostgreSQL database on your preferred platform
+2. Get connection string
+3. Set as DATABASE_URL environment variable
+
+### 3. Vercel Configuration
+
+1. **Connect Repository**:
+   - Go to [vercel.com](https://vercel.com)
+   - Click "New Project"
+   - Import your GitHub repository
+
+2. **Configure Build Settings**:
+   - Framework Preset: `Vite`
+   - Build Command: `vite build`
+   - Output Directory: `dist/public`
+   - Install Command: `npm install`
+
+3. **Environment Variables**:
+   ```
+   DATABASE_URL=your_postgresql_connection_string
+   SESSION_SECRET=random_secret_string_here
+   IRYS_PRIVATE_KEY=your_irys_key (optional)
+   NODE_ENV=production
    ```
 
-2. **Deploy to Vercel:**
-   - Go to [vercel.com](https://vercel.com)
-   - Import your GitHub repository: `https://github.com/NnamdiCode/Datadextoken`
-   - **IMPORTANT**: In build settings, override the build command to: `vite build --config vite.config.production.ts`
-   - Set output directory to: `dist/public`
+4. **Deploy**:
    - Click "Deploy"
+   - Wait for build to complete
+   - Your app will be live at your-app.vercel.app
 
-3. **Vercel Build Settings:**
-   Make sure these settings are configured:
-   - **Build Command**: `vite build --config vite.config.production.ts`
-   - **Output Directory**: `dist/public`
-   - **Install Command**: `npm install`
-   - **Framework**: Vite
+### 4. Post-Deployment Setup
 
-4. **Environment Variables (Optional):**
-   In your Vercel dashboard, you can optionally add:
-   - `VITE_USE_MOCK_API=true` (to force mock API usage)
-   - `VITE_API_URL=your-backend-url` (if you deploy backend separately)
+1. **Database Migration**:
+   - Tables are created automatically via Drizzle
+   - No manual migration needed
 
-### How the Fixed Deployment Works
+2. **Test Functionality**:
+   - Visit your deployed URL
+   - Connect wallet (MetaMask recommended)
+   - Try uploading a small test file
+   - Verify database persistence
 
-1. **Frontend-Only Build**: Uses Vite to build React app as static files
-2. **Mock API Fallback**: If backend is unavailable, automatically uses mock data
-3. **No Node.js Runtime**: Avoids all serverless function compatibility issues
-4. **Demo Mode**: Users can still test all functionality with sample data
+## 🏗 Alternative Deployment Options
 
-### Configuration Files
+### Netlify
 
-- `vercel.json` - Deployment configuration
-- `api/server.js` - Serverless function wrapper for Express
+```bash
+# Build command
+npm run build
 
-### Features Included in Deployment
+# Publish directory
+dist/public
 
-✓ Complete token swap functionality
-✓ Irys blockchain integration
-✓ TradingView-style charts
-✓ AMM trading mechanism
-✓ Real-time token quotes
-✓ Professional UI with Irys branding
+# Environment variables (same as Vercel)
+DATABASE_URL=your_postgresql_url
+SESSION_SECRET=your_session_secret
+```
 
-### Troubleshooting
+### Railway
 
-If you encounter issues:
+1. Connect GitHub repository
+2. Add PostgreSQL service
+3. Set environment variables
+4. Deploy automatically
 
-1. **Build Errors:** Check that all dependencies are in `package.json`
-2. **API Errors:** Ensure environment variables are set in Vercel dashboard
-3. **Routing Issues:** Verify the routes in `vercel.json` match your app structure
+### Self-Hosted (VPS)
 
-### Alternative: Frontend-Only Deployment
+```bash
+# On your server
+git clone https://github.com/yourusername/dataswap.git
+cd dataswap
+npm install
+npm run build
 
-If you want to deploy just the frontend (for testing):
+# Set up environment variables
+cp .env.example .env
+# Edit .env with your configuration
 
-1. Remove the `api/` directory and backend routes from `vercel.json`
-2. Use a separate backend service (Railway, Render, etc.)
-3. Update your API endpoints in the frontend to point to the external backend
+# Run database migration
+npm run db:push
 
-Your app is now ready for production deployment!
+# Start production server
+npm start
+```
+
+## 🔧 Environment Configuration
+
+### Required Variables
+
+| Variable | Description | Example |
+|----------|-------------|---------|
+| `DATABASE_URL` | PostgreSQL connection string | `postgresql://user:pass@host:5432/db` |
+| `SESSION_SECRET` | Random string for sessions | `your-random-secret-here` |
+
+### Optional Variables
+
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `IRYS_PRIVATE_KEY` | Irys blockchain private key | Mock mode |
+| `NODE_ENV` | Environment mode | `development` |
+
+## 🚨 Security Checklist
+
+- [ ] Use strong, unique `SESSION_SECRET`
+- [ ] Keep `IRYS_PRIVATE_KEY` secure and private
+- [ ] Use environment variables for all secrets
+- [ ] Enable SSL/HTTPS in production
+- [ ] Keep dependencies updated
+- [ ] Review database access permissions
+
+## 📊 Monitoring & Analytics
+
+### Recommended Tools
+
+1. **Vercel Analytics**: Built-in performance monitoring
+2. **Sentry**: Error tracking and performance monitoring
+3. **LogRocket**: User session recordings
+4. **Vercel Functions**: Serverless function monitoring
+
+### Database Monitoring
+
+1. **Neon**: Built-in metrics and query analysis
+2. **DataDog**: Advanced database monitoring
+3. **New Relic**: Full-stack application monitoring
+
+## 🛠 Troubleshooting
+
+### Common Issues
+
+**Build Fails**:
+- Check Node.js version (18+ required)
+- Verify all dependencies are installed
+- Check TypeScript errors
+
+**Database Connection Issues**:
+- Verify DATABASE_URL format
+- Check database server accessibility
+- Ensure database exists
+
+**Runtime Errors**:
+- Check environment variables are set
+- Verify database schema is up to date
+- Check server logs for detailed errors
+
+### Debug Commands
+
+```bash
+# Check build locally
+npm run build
+
+# Test database connection
+npm run db:push
+
+# Check TypeScript errors
+npm run check
+
+# View detailed logs
+vercel logs your-app-url
+```
+
+## 📈 Performance Optimization
+
+### Frontend Optimization
+
+- Static assets are automatically optimized by Vite
+- Images are optimized via Vercel Image Optimization
+- Code splitting is handled automatically
+
+### Backend Optimization
+
+- Database queries are optimized with proper indexing
+- Connection pooling is handled by Drizzle
+- API responses are cached where appropriate
+
+### Database Optimization
+
+- Use appropriate indexes on frequently queried columns
+- Monitor query performance with database analytics
+- Consider read replicas for high-traffic applications
+
+## 🔄 CI/CD Pipeline
+
+### Automatic Deployment
+
+Vercel automatically deploys when you push to your main branch:
+
+```bash
+git add .
+git commit -m "Update feature"
+git push origin main
+# Deployment triggers automatically
+```
+
+### Preview Deployments
+
+Every pull request gets its own preview URL for testing.
+
+### Production Safeguards
+
+- Environment variables are isolated between environments
+- Database migrations run automatically
+- Rollback capability available through Vercel dashboard
