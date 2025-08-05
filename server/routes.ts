@@ -3,9 +3,9 @@ import { createServer, type Server } from "http";
 import multer from "multer";
 import path from "path";
 import fs from "fs";
-import { storage } from "./storage";
-import { irysService } from "./irysService";
-import { contractService } from "./services/contracts";
+import { storage } from "./storage.js";
+import { irysService } from "./irysService.js";
+import { contractService } from "./services/contracts.js";
 import { uploadRequestSchema, tradeRequestSchema } from "@shared/schema";
 
 // Configure multer for file uploads with 100MB limit

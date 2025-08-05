@@ -1,4 +1,4 @@
-import { db, dataTokens, trades, liquidityPools, users, irysTransactions } from "./db";
+import { db, dataTokens, trades, liquidityPools, users, irysTransactions } from "./db.js";
 import { eq, desc, like, or, and } from "drizzle-orm";
 import type { 
   DrizzleDataToken as DataToken, 
@@ -12,7 +12,7 @@ import type {
   DrizzleIrysTransaction as IrysTransaction,
   DrizzleInsertIrysTransaction as InsertIrysTransaction 
 } from "@shared/schema";
-import type { IStorage } from "./storage";
+import type { IStorage } from "./storage.js";
 
 // Helper functions to convert database types to interface types
 function normalizeDataToken(dbToken: any): DataToken {
