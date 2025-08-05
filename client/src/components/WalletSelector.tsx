@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Wallet, X, ExternalLink, CheckCircle } from 'lucide-react';
 import Button from './Button';
 import { useWallet } from '../hooks/useWallet';
+import { useToast } from '../hooks/use-toast';
 
 interface WalletOption {
   id: string;
@@ -21,6 +22,7 @@ interface WalletSelectorProps {
 export default function WalletSelector({ isOpen, onClose }: WalletSelectorProps) {
   const [isConnecting, setIsConnecting] = useState<string | null>(null);
   const { connect: connectMetaMask } = useWallet();
+  const { toast } = useToast();
 
   const wallets: WalletOption[] = [
     {
@@ -28,7 +30,7 @@ export default function WalletSelector({ isOpen, onClose }: WalletSelectorProps)
       name: 'MetaMask',
       icon: '🦊',
       description: 'The most popular Ethereum wallet',
-      isInstalled: () => !!(window as any).ethereum?.isMetaMask,
+      isInstalled: () => typeof window !== 'undefined' && !!(window as any).ethereum?.isMetaMask,
       connect: async () => {
         console.log("Attempting MetaMask connection...");
         
@@ -51,7 +53,7 @@ export default function WalletSelector({ isOpen, onClose }: WalletSelectorProps)
       name: 'Coinbase Wallet',
       icon: '🔵',
       description: 'Connect with Coinbase Wallet',
-      isInstalled: () => !!(window as any).ethereum?.isCoinbaseWallet,
+      isInstalled: () => typeof window !== 'undefined' && !!(window as any).ethereum?.isCoinbaseWallet,
       connect: async () => {
         console.log("Attempting Coinbase Wallet connection...");
         
@@ -87,7 +89,7 @@ export default function WalletSelector({ isOpen, onClose }: WalletSelectorProps)
       name: 'Browser Wallet',
       icon: '🌐',
       description: 'Use any injected wallet provider',
-      isInstalled: () => !!(window as any).ethereum,
+      isInstalled: () => typeof window !== 'undefined' && !!(window as any).ethereum,
       connect: async () => {
         console.log("Attempting Browser Wallet connection...");
         
@@ -117,10 +119,13 @@ export default function WalletSelector({ isOpen, onClose }: WalletSelectorProps)
 
     try {
       setIsConnecting(wallet.id);
+      console.log(`🔗 Attempting to connect ${wallet.name}...`);
+      
       await wallet.connect();
+      console.log(`✅ Successfully connected to ${wallet.name}`);
       onClose();
     } catch (error: any) {
-      console.error(`Failed to connect to ${wallet.name}:`, error);
+      console.error(`❌ Failed to connect to ${wallet.name}:`, error);
       
       // Better error messaging for users
       let userMessage = error.message;
@@ -128,11 +133,20 @@ export default function WalletSelector({ isOpen, onClose }: WalletSelectorProps)
         userMessage = 'Connection was rejected. Please try again and accept the connection request.';
       } else if (error.code === -32002) {
         userMessage = 'A connection request is already pending in your wallet. Please check your wallet.';
-      } else if (error.message.includes('User denied')) {
+      } else if (error.message?.includes('User denied')) {
         userMessage = 'Connection was denied. Please accept the connection request in your wallet.';
+      } else if (error.message?.includes('not detected')) {
+        userMessage = `${wallet.name} wallet not detected. Please make sure it's installed and enabled.`;
+      } else if (error.message?.includes('already processing')) {
+        userMessage = 'Connection already in progress. Please check your wallet.';
       }
       
-      alert(`Failed to connect to ${wallet.name}: ${userMessage}`);
+      // Use toast notification instead of alert
+      toast({
+        title: `Failed to connect to ${wallet.name}`,
+        description: userMessage,
+        variant: "destructive",
+      });
     } finally {
       setIsConnecting(null);
     }

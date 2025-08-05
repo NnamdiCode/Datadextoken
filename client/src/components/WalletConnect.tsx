@@ -106,6 +106,24 @@ export default function WalletConnect() {
       <div className="flex flex-col items-end space-y-2">
         <Button
           onClick={() => {
+            if (typeof window === 'undefined') {
+              toast({ 
+                title: 'Wallet not available', 
+                description: 'Please access this site from a Web3-enabled browser',
+                variant: 'destructive' 
+              });
+              return;
+            }
+            
+            if (!window.ethereum) {
+              toast({ 
+                title: 'No wallet detected', 
+                description: 'Please install MetaMask or another Web3 wallet extension',
+                variant: 'destructive' 
+              });
+              return;
+            }
+            
             // Always show wallet selector to let user choose their preferred EVM wallet
             setIsWalletSelectorOpen(true);
           }}
@@ -122,7 +140,7 @@ export default function WalletConnect() {
         )}
         {typeof window !== 'undefined' && !window.ethereum && (
           <div className="text-xs text-yellow-400 bg-yellow-400/10 px-2 py-1 rounded max-w-48 text-right border border-yellow-400/20">
-            No wallet extension detected. Please install MetaMask or another Web3 wallet.
+            No Web3 wallet detected. Install <a href="https://metamask.io/download/" target="_blank" rel="noopener noreferrer" className="underline hover:text-yellow-300">MetaMask</a> to continue.
           </div>
         )}
       </div>

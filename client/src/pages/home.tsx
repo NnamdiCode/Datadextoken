@@ -1,11 +1,15 @@
 import { motion } from "framer-motion";
-import { ArrowRight, Upload, TrendingUp, Shield, Zap, Globe, ExternalLink, Copy } from "lucide-react";
+import { ArrowRight, Upload, TrendingUp, Shield, Zap, Globe, ExternalLink, Copy, Wrench } from "lucide-react";
 import { Link } from "wouter";
 import GlassCard from "../components/GlassCard";
 import Button from "../components/Button";
+import WalletDebug from "../components/WalletDebug";
 import { useQuery } from "@tanstack/react-query";
+import { useState } from "react";
 
 export default function Home() {
+  const [showDebug, setShowDebug] = useState(false);
+  
   const { data: recentTokens } = useQuery({
     queryKey: ["/api/tokens"],
     queryFn: async () => {
@@ -71,6 +75,30 @@ export default function Home() {
                 </Button>
               </Link>
             </div>
+            
+            {/* Wallet Debug Toggle */}
+            <div className="mt-8">
+              <button
+                onClick={() => setShowDebug(!showDebug)}
+                className="text-sm text-gray-400 hover:text-gray-300 transition-colors flex items-center gap-2 mx-auto"
+              >
+                <Wrench size={16} />
+                {showDebug ? 'Hide' : 'Show'} Wallet Debug Info
+              </button>
+            </div>
+            
+            {/* Wallet Debug Component */}
+            {showDebug && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                transition={{ duration: 0.3 }}
+                className="mt-8"
+              >
+                <WalletDebug />
+              </motion.div>
+            )}
           </motion.div>
         </div>
       </section>

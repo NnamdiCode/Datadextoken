@@ -181,8 +181,14 @@ export function useWallet() {
     };
 
     const connect = async () => {
+      // Check if wallet is available
+      if (typeof window === 'undefined') {
+        setNetworkError("Wallet connection not available in this environment");
+        return;
+      }
+
       if (!window.ethereum) {
-        setNetworkError("Please install MetaMask or another Ethereum wallet");
+        setNetworkError("No wallet detected. Please install MetaMask or another Web3 wallet.");
         return;
       }
 
@@ -190,11 +196,17 @@ export function useWallet() {
         setIsConnecting(true);
         setNetworkError(null);
         
-        // Force window.ethereum to be available
-        const ethereum = window.ethereum;
+        console.log("🔗 Starting wallet connection...");
         
+        // Force ensure ethereum is available
+        await new Promise(resolve => setTimeout(resolve, 100));
+        
+        if (!window.ethereum) {
+          throw new Error("Wallet provider became unavailable");
+        }
+
         // Request account access first
-        const accounts = await ethereum.request({
+        const accounts = await window.ethereum.request({
           method: "eth_requestAccounts",
         });
 
@@ -202,14 +214,16 @@ export function useWallet() {
           throw new Error("No accounts returned from wallet");
         }
 
+        console.log("✅ Accounts received:", accounts.length);
+
         // Create provider after getting accounts
-        const provider = new ethers.BrowserProvider(ethereum);
+        const provider = new ethers.BrowserProvider(window.ethereum);
         const network = await provider.getNetwork();
         const currentChainId = '0x' + network.chainId.toString(16);
         const signer = await provider.getSigner();
         const address = await signer.getAddress();
 
-        console.log("Wallet connected:", { address, currentChainId });
+        console.log("✅ Wallet connected:", { address: address.slice(0, 6) + '...', currentChainId });
 
         setAccount(address);
         setIsConnected(true);
@@ -225,15 +239,19 @@ export function useWallet() {
           setNetworkError(null);
         }
       } catch (error: any) {
-        console.error("Error connecting wallet:", error);
+        console.error("❌ Error connecting wallet:", error);
         
-        // Handle specific error cases
+        // Handle specific error cases with better messaging
         if (error.code === 4001) {
-          setNetworkError('Connection rejected by user');
+          setNetworkError('Connection rejected. Please accept the connection request in your wallet.');
         } else if (error.code === -32002) {
-          setNetworkError('Connection request already pending in wallet');
+          setNetworkError('Connection request pending. Please check your wallet and approve the request.');
+        } else if (error.message?.includes('User denied')) {
+          setNetworkError('Connection denied. Please accept the connection request to continue.');
+        } else if (error.message?.includes('already processing')) {
+          setNetworkError('Connection already in progress. Please check your wallet.');
         } else {
-          setNetworkError('Failed to connect wallet: ' + (error.message || 'Unknown error'));
+          setNetworkError('Failed to connect: ' + (error.message || 'Unknown error occurred'));
         }
         throw error;
       } finally {
@@ -402,8 +420,14 @@ export function WalletProvider({ children }: { children: ReactNode }) {
   };
 
   const connect = async () => {
+    // Check if wallet is available
+    if (typeof window === 'undefined') {
+      setNetworkError("Wallet connection not available in this environment");
+      return;
+    }
+
     if (!window.ethereum) {
-      setNetworkError("Please install MetaMask or another Ethereum wallet");
+      setNetworkError("No wallet detected. Please install MetaMask or another Web3 wallet.");
       return;
     }
 
@@ -413,6 +437,13 @@ export function WalletProvider({ children }: { children: ReactNode }) {
       
       console.log("🔗 Starting wallet connection...");
       
+      // Force ensure ethereum is available
+      await new Promise(resolve => setTimeout(resolve, 100));
+      
+      if (!window.ethereum) {
+        throw new Error("Wallet provider became unavailable");
+      }
+
       // Request account access first
       const accounts = await window.ethereum.request({
         method: "eth_requestAccounts",
@@ -422,7 +453,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
         throw new Error("No accounts returned from wallet");
       }
 
-      console.log("✅ Accounts received:", accounts);
+      console.log("✅ Accounts received:", accounts.length);
 
       // Create provider after getting accounts
       const provider = new ethers.BrowserProvider(window.ethereum);
@@ -431,7 +462,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
       const signer = await provider.getSigner();
       const address = await signer.getAddress();
 
-      console.log("✅ Wallet connected:", { address, currentChainId });
+      console.log("✅ Wallet connected:", { address: address.slice(0, 6) + '...', currentChainId });
 
       setAccount(address);
       setIsConnected(true);
@@ -449,13 +480,17 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     } catch (error: any) {
       console.error("❌ Error connecting wallet:", error);
       
-      // Handle specific error cases
+      // Handle specific error cases with better messaging
       if (error.code === 4001) {
-        setNetworkError('Connection rejected by user');
+        setNetworkError('Connection rejected. Please accept the connection request in your wallet.');
       } else if (error.code === -32002) {
-        setNetworkError('Connection request already pending in wallet');
+        setNetworkError('Connection request pending. Please check your wallet and approve the request.');
+      } else if (error.message?.includes('User denied')) {
+        setNetworkError('Connection denied. Please accept the connection request to continue.');
+      } else if (error.message?.includes('already processing')) {
+        setNetworkError('Connection already in progress. Please check your wallet.');
       } else {
-        setNetworkError('Failed to connect wallet: ' + (error.message || 'Unknown error'));
+        setNetworkError('Failed to connect: ' + (error.message || 'Unknown error occurred'));
       }
       throw error;
     } finally {
