@@ -1,39 +1,53 @@
 # DataSwap Deployment Guide
 
-## Vercel Deployment
+## Fixed Vercel Deployment Issues
 
-Your DataSwap application is configured for deployment on Vercel with the following setup:
+### Issue 1: Dynamic Require Error
+The `__require` error was caused by trying to run Node.js server code in Vercel's edge runtime. Fixed by:
+- Removed incompatible `builds` configuration
+- Switched to frontend-only deployment
+- Simplified `vercel.json` configuration
 
-### Frontend (Static Build)
+### Issue 2: Deprecated Builds Warning
+The warning about `builds` existing in configuration has been resolved by:
+- Removing the `builds` array from `vercel.json`
+- Using modern Vercel configuration with `buildCommand` and `outputDirectory`
+- Letting Vercel auto-detect the framework (Vite)
+
+## Current Deployment Setup
+
+### Frontend-Only Deployment (Recommended)
 - Uses Vite to build the React frontend
 - Outputs to `dist/` directory
-- Configured for static hosting
-
-### Backend (Serverless Functions)
-- Express server wrapped as Vercel serverless function
-- All `/api/*` routes handled by the serverless function
-- Automatic scaling and CDN distribution
+- Static hosting on Vercel's CDN
+- No serverless functions (avoids Node.js compatibility issues)
 
 ### Deployment Steps
 
 1. **Push your code to GitHub:**
    ```bash
    git add .
-   git commit -m "Ready for Vercel deployment"
+   git commit -m "Fix Vercel deployment - frontend only with mock API fallback"
    git push origin main
    ```
 
 2. **Deploy to Vercel:**
    - Go to [vercel.com](https://vercel.com)
    - Import your GitHub repository: `https://github.com/NnamdiCode/Datadextoken`
-   - Vercel will automatically detect the configuration
+   - Vercel will automatically detect Vite framework
    - Click "Deploy"
 
-3. **Environment Variables (Important!):**
-   In your Vercel dashboard, add these environment variables:
-   - `NODE_ENV=production`
-   - `IRYS_PRIVATE_KEY` (if you have one for production)
-   - Any other environment variables your app needs
+3. **Environment Variables (Optional):**
+   In your Vercel dashboard, you can optionally add:
+   - `VITE_USE_MOCK_API=true` (to force mock API usage)
+   - `VITE_API_URL=your-backend-url` (if you deploy backend separately)
+
+### How the Fixed Deployment Works
+
+1. **Frontend-Only Build**: Uses Vite to build React app as static files
+2. **Mock API Fallback**: If backend is unavailable, automatically uses mock data
+3. **No Node.js Runtime**: Avoids all serverless function compatibility issues
+4. **Demo Mode**: Users can still test all functionality with sample data
 
 ### Configuration Files
 

@@ -1,4 +1,4 @@
-import Irys from '@irys/sdk';
+import Bundlr from '@bundlr-network/client';
 
 // Irys configuration
 const IRYS_NODE_URL = process.env.IRYS_NODE_URL || "https://devnet.irys.xyz";
@@ -20,19 +20,12 @@ export class IrysService {
         return;
       }
 
-      this.irys = new Irys({
-        network: "devnet", // or "mainnet"
-        token: "ethereum", // Use ETH as payment token
-        key: IRYS_PRIVATE_KEY,
-        config: {
-          providerUrl: "https://ethereum-sepolia.publicnode.com" // Sepolia testnet
-        }
-      });
+      this.irys = new Bundlr("https://devnet.bundlr.network", "ethereum", IRYS_PRIVATE_KEY);
 
       this.isInitialized = true;
-      console.log("✅ Irys service initialized successfully");
+      console.log("✅ Bundlr service initialized successfully (compatible with Irys)");
     } catch (error) {
-      console.error("❌ Failed to initialize Irys service:", error);
+      console.error("❌ Failed to initialize Bundlr service:", error);
       this.isInitialized = false;
     }
   }

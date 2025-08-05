@@ -11,9 +11,9 @@
     "db:push": "drizzle-kit push"
   },
   "dependencies": {
+    "@bundlr-network/client": "^0.11.17",
     "@google-cloud/storage": "^7.16.0",
     "@hookform/resolvers": "^3.10.0",
-    "@irys/sdk": "^0.2.11",
     "@jridgewell/trace-mapping": "^0.3.25",
     "@openzeppelin/contracts": "^5.3.0",
     "@radix-ui/react-accordion": "^1.2.4",
