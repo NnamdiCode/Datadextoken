@@ -1,81 +1,68 @@
 # DataSwap Deployment Guide
 
-## GitHub Repository Setup
-
-### 1. Initialize Git Repository
-```bash
-git init
-git add .
-git commit -m "Initial commit: DataSwap - Decentralized Data Exchange Platform"
-```
-
-### 2. Connect to Your GitHub Repository
-```bash
-git remote add origin https://github.com/yourusername/dataswap.git
-git branch -M main
-git push -u origin main
-```
-
-### 3. Environment Variables for Production
-Create a `.env.production` file with:
-```
-DATABASE_URL=your_production_database_url
-VITE_IRYS_NETWORK=mainnet
-VITE_IRYS_RPC_URL=https://rpc.irys.xyz
-VITE_CONTRACT_ADDRESS=your_deployed_contract_address
-```
-
 ## Vercel Deployment
 
-### 1. Install Vercel CLI
-```bash
-npm install -g vercel
-```
+Your DataSwap application is configured for deployment on Vercel with the following setup:
 
-### 2. Deploy to Vercel
-```bash
-vercel --prod
-```
+### Frontend (Static Build)
+- Uses Vite to build the React frontend
+- Outputs to `dist/` directory
+- Configured for static hosting
 
-### 3. Configure Build Settings
-- Framework Preset: Vite
-- Build Command: `npm run build`
-- Output Directory: `dist`
-- Install Command: `npm install`
+### Backend (Serverless Functions)
+- Express server wrapped as Vercel serverless function
+- All `/api/*` routes handled by the serverless function
+- Automatic scaling and CDN distribution
 
-### 4. Environment Variables in Vercel
-Add these in your Vercel dashboard:
-- `DATABASE_URL`
-- `VITE_IRYS_NETWORK`
-- `VITE_IRYS_RPC_URL`
-- `VITE_CONTRACT_ADDRESS`
+### Deployment Steps
 
-## Smart Contract Deployment
+1. **Push your code to GitHub:**
+   ```bash
+   git add .
+   git commit -m "Ready for Vercel deployment"
+   git push origin main
+   ```
 
-### 1. Deploy to Irys Mainnet
-```bash
-npx hardhat run deploy/deploy.js --network irys-mainnet
-```
+2. **Deploy to Vercel:**
+   - Go to [vercel.com](https://vercel.com)
+   - Import your GitHub repository: `https://github.com/NnamdiCode/Datadextoken`
+   - Vercel will automatically detect the configuration
+   - Click "Deploy"
 
-### 2. Verify Contracts
-```bash
-npx hardhat verify --network irys-mainnet CONTRACT_ADDRESS
-```
+3. **Environment Variables (Important!):**
+   In your Vercel dashboard, add these environment variables:
+   - `NODE_ENV=production`
+   - `IRYS_PRIVATE_KEY` (if you have one for production)
+   - Any other environment variables your app needs
 
-## Production Checklist
+### Configuration Files
 
-- [ ] Environment variables configured
-- [ ] Smart contracts deployed to mainnet
-- [ ] Database migrated to production
-- [ ] Domain configured with SSL
-- [ ] Error monitoring setup
-- [ ] Performance monitoring enabled
-- [ ] Security audit completed
+- `vercel.json` - Deployment configuration
+- `api/server.js` - Serverless function wrapper for Express
 
-## Live URLs
-- Frontend: `https://yourdomain.com`
-- API: `https://yourdomain.com/api`
-- Irys Explorer: `https://explorer.irys.xyz`
+### Features Included in Deployment
 
-## Support
-For deployment issues, check the logs in Vercel dashboard and Irys network status.
+✓ Complete token swap functionality
+✓ Irys blockchain integration
+✓ TradingView-style charts
+✓ AMM trading mechanism
+✓ Real-time token quotes
+✓ Professional UI with Irys branding
+
+### Troubleshooting
+
+If you encounter issues:
+
+1. **Build Errors:** Check that all dependencies are in `package.json`
+2. **API Errors:** Ensure environment variables are set in Vercel dashboard
+3. **Routing Issues:** Verify the routes in `vercel.json` match your app structure
+
+### Alternative: Frontend-Only Deployment
+
+If you want to deploy just the frontend (for testing):
+
+1. Remove the `api/` directory and backend routes from `vercel.json`
+2. Use a separate backend service (Railway, Render, etc.)
+3. Update your API endpoints in the frontend to point to the external backend
+
+Your app is now ready for production deployment!
