@@ -76,6 +76,36 @@ class MockApiService {
       priceChange24h: 8.7,
       totalSupply: "1000000000",
       createdAt: new Date().toISOString()
+    },
+    {
+      id: 4,
+      tokenAddress: "0x4567890123456789012345678901234567890123",
+      name: "AI Training Dataset",
+      symbol: "AITD",
+      description: "Machine learning training data for computer vision",
+      category: "technology",
+      creatorAddress: "0x456789abcdef0123456789abcdef01234567890",
+      fileSize: 8192000,
+      currentPrice: 0.045,
+      volume24h: 1200,
+      priceChange24h: 12.5,
+      totalSupply: "1000000000",
+      createdAt: new Date().toISOString()
+    },
+    {
+      id: 5,
+      tokenAddress: "0x5678901234567890123456789012345678901234",
+      name: "Climate Data Archive",
+      symbol: "CLIM",
+      description: "Historical climate and environmental measurements",
+      category: "research",
+      creatorAddress: "0x789abcdef0123456789abcdef012345678901",
+      fileSize: 3072000,
+      currentPrice: 0.018,
+      volume24h: 780,
+      priceChange24h: -1.8,
+      totalSupply: "1000000000",
+      createdAt: new Date().toISOString()
     }
   ];
 

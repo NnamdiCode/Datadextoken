@@ -2,7 +2,8 @@
 import { mockApiService } from '../services/mockApiService';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
-const USE_MOCK_API = import.meta.env.VITE_USE_MOCK_API === 'true' || false;
+const USE_MOCK_API = import.meta.env.VITE_USE_MOCK_API === 'true' || 
+                    (typeof window !== 'undefined' && window.location.hostname.includes('vercel.app'));
 
 class ApiClient {
   private async makeRequest(url: string, options: RequestInit = {}): Promise<any> {

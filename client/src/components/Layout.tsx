@@ -1,6 +1,6 @@
 import { Link, useLocation } from 'wouter';
 import { motion } from 'framer-motion';
-import { Upload, TrendingUp, Home, Menu, X, Clock, Droplets } from 'lucide-react';
+import { Upload, TrendingUp, Home, Menu, X, Clock, Droplets, Info } from 'lucide-react';
 import { useState } from 'react';
 import Button from './Button';
 import WalletConnect from './WalletConnect';
@@ -31,8 +31,20 @@ export default function Layout({ children }: LayoutProps) {
 
   return (
     <div className="min-h-screen bg-background">
+      {/* Demo Banner */}
+      <div className="fixed top-0 left-0 right-0 z-50 bg-gradient-to-r from-primary/90 to-emerald-600/90 backdrop-blur-sm">
+        <div className="max-w-7xl mx-auto px-4 py-2">
+          <div className="flex items-center justify-center text-white text-sm">
+            <Info size={16} className="mr-2" />
+            <span className="font-medium">
+              Demo Version - Sample data shown | Full functionality available with wallet connection
+            </span>
+          </div>
+        </div>
+      </div>
+      
       {/* Navigation */}
-      <nav className="fixed top-0 left-0 right-0 z-50 bg-white/5 backdrop-blur-lg border-b border-white/10">
+      <nav className="fixed top-10 left-0 right-0 z-40 bg-white/5 backdrop-blur-lg border-b border-white/10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-16 items-center">
             <div className="flex items-center">
@@ -132,7 +144,7 @@ export default function Layout({ children }: LayoutProps) {
       <NetworkStatus />
 
       {/* Main content with proper spacing */}
-      <main className="pt-16">
+      <main className="pt-26">
         {children}
       </main>
     </div>
