@@ -1,4 +1,4 @@
-import Bundlr from '@bundlr-network/client';
+import Irys from '@irys/sdk';
 
 // Irys configuration
 const IRYS_NODE_URL = process.env.IRYS_NODE_URL || "https://devnet.irys.xyz";
@@ -20,12 +20,16 @@ export class IrysService {
         return;
       }
 
-      this.irys = new Bundlr("https://devnet.bundlr.network", "ethereum", IRYS_PRIVATE_KEY);
+      this.irys = new Irys({
+        network: "devnet", // or "mainnet"
+        token: "ethereum",
+        key: IRYS_PRIVATE_KEY,
+      });
 
       this.isInitialized = true;
-      console.log("✅ Bundlr service initialized successfully (compatible with Irys)");
+      console.log("✅ Irys service initialized successfully");
     } catch (error) {
-      console.error("❌ Failed to initialize Bundlr service:", error);
+      console.error("❌ Failed to initialize Irys service:", error);
       this.isInitialized = false;
     }
   }
