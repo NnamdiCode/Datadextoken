@@ -14,33 +14,74 @@ import type {
 } from "@shared/schema";
 import type { IStorage } from "./storage";
 
+// Helper functions to convert database types to interface types
+function normalizeDataToken(dbToken: any): DataToken {
+  return {
+    ...dbToken,
+    description: dbToken.description ?? undefined,
+    imageUrl: dbToken.imageUrl ?? undefined,
+    currentPrice: parseFloat(dbToken.currentPrice.toString()),
+    volume24h: parseFloat(dbToken.volume24h.toString()),
+    priceChange24h: parseFloat(dbToken.priceChange24h.toString()),
+    createdAt: dbToken.createdAt || new Date(),
+  };
+}
+
+function normalizeTrade(dbTrade: any): Trade {
+  return {
+    ...dbTrade,
+    pricePerToken: parseFloat(dbTrade.pricePerToken.toString()),
+    executedAt: dbTrade.executedAt || new Date(),
+  };
+}
+
+function normalizeLiquidityPool(dbPool: any): LiquidityPool {
+  return {
+    ...dbPool,
+    createdAt: dbPool.createdAt || new Date(),
+  };
+}
+
+function normalizeIrysTransaction(dbTx: any): IrysTransaction {
+  return {
+    ...dbTx,
+    blockNumber: dbTx.blockNumber ?? undefined,
+    blockHash: dbTx.blockHash ?? undefined,
+  };
+}
+
 export class DatabaseStorage implements IStorage {
   // Data Tokens
   async getDataToken(id: number): Promise<DataToken | undefined> {
     const [token] = await db.select().from(dataTokens).where(eq(dataTokens.id, id));
-    return token;
+    if (!token) return undefined;
+    return normalizeDataToken(token);
   }
 
   async getDataTokenByAddress(address: string): Promise<DataToken | undefined> {
     const [token] = await db.select().from(dataTokens).where(eq(dataTokens.tokenAddress, address));
-    return token;
+    if (!token) return undefined;
+    return normalizeDataToken(token);
   }
 
   async getDataTokenByIrysId(irysId: string): Promise<DataToken | undefined> {
     const [token] = await db.select().from(dataTokens).where(eq(dataTokens.irysTransactionId, irysId));
-    return token;
+    if (!token) return undefined;
+    return normalizeDataToken(token);
   }
 
   async getAllDataTokens(limit = 100, offset = 0): Promise<DataToken[]> {
-    return await db.select().from(dataTokens)
+    const tokens = await db.select().from(dataTokens)
       .orderBy(desc(dataTokens.createdAt))
       .limit(limit)
       .offset(offset);
+    
+    return tokens.map(normalizeDataToken);
   }
 
   async searchDataTokens(query: string): Promise<DataToken[]> {
     const searchTerm = `%${query}%`;
-    return await db.select().from(dataTokens)
+    const tokens = await db.select().from(dataTokens)
       .where(
         or(
           like(dataTokens.name, searchTerm),
@@ -50,17 +91,27 @@ export class DatabaseStorage implements IStorage {
         )
       )
       .orderBy(desc(dataTokens.createdAt));
+    
+    return tokens.map(normalizeDataToken);
   }
 
   async getTokensByCreator(creatorAddress: string): Promise<DataToken[]> {
-    return await db.select().from(dataTokens)
+    const tokens = await db.select().from(dataTokens)
       .where(eq(dataTokens.creatorAddress, creatorAddress))
       .orderBy(desc(dataTokens.createdAt));
+    
+    return tokens.map(normalizeDataToken);
   }
 
   async createDataToken(token: InsertDataToken): Promise<DataToken> {
-    const [newToken] = await db.insert(dataTokens).values(token).returning();
-    return newToken;
+    const [newToken] = await db.insert(dataTokens).values({
+      ...token,
+      currentPrice: (token.currentPrice || 0).toString(),
+      volume24h: (token.volume24h || 0).toString(),
+      priceChange24h: (token.priceChange24h || 0).toString(),
+    }).returning();
+    
+    return normalizeDataToken(newToken);
   }
 
   async updateDataTokenPrice(address: string, price: number, volume24h?: number, priceChange24h?: number): Promise<void> {
@@ -76,18 +127,21 @@ export class DatabaseStorage implements IStorage {
   // Trades
   async getTrade(id: number): Promise<Trade | undefined> {
     const [trade] = await db.select().from(trades).where(eq(trades.id, id));
-    return trade;
+    if (!trade) return undefined;
+    return normalizeTrade(trade);
   }
 
   async getTradesByUser(userAddress: string, limit = 50): Promise<Trade[]> {
-    return await db.select().from(trades)
+    const results = await db.select().from(trades)
       .where(eq(trades.traderAddress, userAddress))
       .orderBy(desc(trades.executedAt))
       .limit(limit);
+    
+    return results.map(normalizeTrade);
   }
 
   async getTradesByToken(tokenAddress: string, limit = 50): Promise<Trade[]> {
-    return await db.select().from(trades)
+    const results = await db.select().from(trades)
       .where(
         or(
           eq(trades.fromTokenAddress, tokenAddress),
@@ -96,17 +150,25 @@ export class DatabaseStorage implements IStorage {
       )
       .orderBy(desc(trades.executedAt))
       .limit(limit);
+    
+    return results.map(normalizeTrade);
   }
 
   async createTrade(trade: InsertTrade): Promise<Trade> {
-    const [newTrade] = await db.insert(trades).values(trade).returning();
-    return newTrade;
+    const [newTrade] = await db.insert(trades).values({
+      ...trade,
+      pricePerToken: trade.pricePerToken.toString(),
+    }).returning();
+    
+    return normalizeTrade(newTrade);
   }
 
   async getRecentTrades(limit = 20): Promise<Trade[]> {
-    return await db.select().from(trades)
+    const results = await db.select().from(trades)
       .orderBy(desc(trades.executedAt))
       .limit(limit);
+    
+    return results.map(normalizeTrade);
   }
 
   // Liquidity Pools
@@ -118,17 +180,20 @@ export class DatabaseStorage implements IStorage {
           and(eq(liquidityPools.tokenAAddress, tokenB), eq(liquidityPools.tokenBAddress, tokenA))
         )
       );
-    return pool;
+    if (!pool) return undefined;
+    return normalizeLiquidityPool(pool);
   }
 
   async getAllLiquidityPools(): Promise<LiquidityPool[]> {
-    return await db.select().from(liquidityPools)
+    const pools = await db.select().from(liquidityPools)
       .orderBy(desc(liquidityPools.createdAt));
+    
+    return pools.map(normalizeLiquidityPool);
   }
 
   async createLiquidityPool(pool: InsertLiquidityPool): Promise<LiquidityPool> {
     const [newPool] = await db.insert(liquidityPools).values(pool).returning();
-    return newPool;
+    return normalizeLiquidityPool(newPool);
   }
 
   async updateLiquidityPool(tokenA: string, tokenB: string, reserveA: string, reserveB: string): Promise<void> {
@@ -167,11 +232,12 @@ export class DatabaseStorage implements IStorage {
   // Irys Transactions
   async getIrysTransaction(hash: string): Promise<IrysTransaction | undefined> {
     const [transaction] = await db.select().from(irysTransactions).where(eq(irysTransactions.hash, hash));
-    return transaction;
+    if (!transaction) return undefined;
+    return normalizeIrysTransaction(transaction);
   }
 
   async getIrysTransactionsByUser(userAddress: string, limit = 50): Promise<IrysTransaction[]> {
-    return await db.select().from(irysTransactions)
+    const transactions = await db.select().from(irysTransactions)
       .where(
         or(
           eq(irysTransactions.fromAddress, userAddress),
@@ -180,11 +246,13 @@ export class DatabaseStorage implements IStorage {
       )
       .orderBy(desc(irysTransactions.timestamp))
       .limit(limit);
+    
+    return transactions.map(normalizeIrysTransaction);
   }
 
   async createIrysTransaction(transaction: InsertIrysTransaction): Promise<IrysTransaction> {
     const [newTransaction] = await db.insert(irysTransactions).values(transaction).returning();
-    return newTransaction;
+    return normalizeIrysTransaction(newTransaction);
   }
 
   async updateIrysTransactionStatus(hash: string, status: 'success' | 'failed' | 'pending', blockNumber?: number, blockHash?: string): Promise<void> {
@@ -198,9 +266,11 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getRecentIrysTransactions(limit = 20): Promise<IrysTransaction[]> {
-    return await db.select().from(irysTransactions)
+    const transactions = await db.select().from(irysTransactions)
       .orderBy(desc(irysTransactions.timestamp))
       .limit(limit);
+    
+    return transactions.map(normalizeIrysTransaction);
   }
 }
 
