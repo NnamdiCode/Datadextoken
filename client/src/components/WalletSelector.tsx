@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Wallet, X, ExternalLink, CheckCircle } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import Button from './Button';
 import { useWallet } from '../hooks/useWallet';
 import { useToast } from '../hooks/use-toast';
@@ -72,23 +73,10 @@ export default function WalletSelector({ isOpen, onClose }: WalletSelectorProps)
       installUrl: 'https://www.coinbase.com/wallet'
     },
     {
-      id: 'walletconnect',
-      name: 'WalletConnect',
-      icon: '🔗',
-      description: 'Connect with mobile wallets',
-      isInstalled: () => true, // WalletConnect is always available
-      connect: async () => {
-        // For now, fallback to MetaMask provider
-        // In a real implementation, you'd use WalletConnect SDK
-        throw new Error('WalletConnect integration coming soon');
-      },
-      installUrl: 'https://walletconnect.com/'
-    },
-    {
-      id: 'injected',
+      id: 'browser',
       name: 'Browser Wallet',
       icon: '🌐',
-      description: 'Use any injected wallet provider',
+      description: 'Connect with any installed Web3 wallet',
       isInstalled: () => typeof window !== 'undefined' && !!(window as any).ethereum,
       connect: async () => {
         console.log("Attempting Browser Wallet connection...");
@@ -152,81 +140,71 @@ export default function WalletSelector({ isOpen, onClose }: WalletSelectorProps)
     }
   };
 
-  if (!isOpen) return null;
-
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
-      {/* Backdrop */}
-      <div 
-        className="absolute inset-0 bg-black/60 backdrop-blur-sm" 
-        onClick={onClose}
-      />
-      
-      {/* Modal */}
-      <div className="relative bg-gray-900 border border-gray-700 rounded-xl p-6 max-w-md w-full mx-4 shadow-2xl">
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-xl font-semibold text-white">Connect Wallet</h2>
-          <button
-            onClick={onClose}
-            className="text-gray-400 hover:text-white transition-colors"
-          >
-            <X size={20} />
-          </button>
-        </div>
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className="sm:max-w-md bg-black/90 backdrop-blur-xl border border-white/20">
+        <DialogHeader>
+          <DialogTitle className="flex items-center space-x-2 text-white">
+            <Wallet className="w-5 h-5 text-primary" />
+            <span>Choose Wallet</span>
+          </DialogTitle>
+        </DialogHeader>
 
-        <p className="text-gray-400 text-sm mb-6">
-          Choose your preferred wallet to connect to DataSwap and start trading data tokens.
-        </p>
+        <div className="space-y-6">
+          <p className="text-gray-400 text-sm">
+            Choose your preferred wallet to connect to DataSwap and start trading data tokens.
+          </p>
 
-        <div className="space-y-3">
-          {wallets.map((wallet) => {
-            const isInstalled = wallet.isInstalled();
-            const isCurrentlyConnecting = isConnecting === wallet.id;
-            
-            return (
-              <button
-                key={wallet.id}
-                onClick={() => handleWalletConnect(wallet)}
-                disabled={isCurrentlyConnecting}
-                className={`w-full flex items-center justify-between p-4 rounded-lg border transition-all ${
-                  isInstalled
-                    ? 'border-gray-600 hover:border-primary hover:bg-white/5'
-                    : 'border-gray-700 bg-gray-800/50'
-                } ${isCurrentlyConnecting ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
-              >
-                <div className="flex items-center space-x-3">
-                  <span className="text-2xl">{wallet.icon}</span>
-                  <div className="text-left">
-                    <div className="font-medium text-white">{wallet.name}</div>
-                    <div className="text-xs text-gray-400">{wallet.description}</div>
+          <div className="space-y-3">
+            {wallets.map((wallet) => {
+              const isInstalled = wallet.isInstalled();
+              const isCurrentlyConnecting = isConnecting === wallet.id;
+              
+              return (
+                <button
+                  key={wallet.id}
+                  onClick={() => handleWalletConnect(wallet)}
+                  disabled={isCurrentlyConnecting}
+                  className={`w-full flex items-center justify-between p-4 rounded-lg border transition-all ${
+                    isInstalled
+                      ? 'border-gray-600 hover:border-primary hover:bg-white/5'
+                      : 'border-gray-700 bg-gray-800/50'
+                  } ${isCurrentlyConnecting ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+                >
+                  <div className="flex items-center space-x-3">
+                    <span className="text-2xl">{wallet.icon}</span>
+                    <div className="text-left">
+                      <div className="font-medium text-white">{wallet.name}</div>
+                      <div className="text-xs text-gray-400">{wallet.description}</div>
+                    </div>
                   </div>
-                </div>
-                
-                <div className="flex items-center space-x-2">
-                  {isInstalled ? (
-                    <CheckCircle className="text-green-400" size={16} />
-                  ) : (
-                    <ExternalLink className="text-gray-400" size={16} />
-                  )}
-                  {isCurrentlyConnecting && (
-                    <div className="animate-spin rounded-full h-4 w-4 border-2 border-primary border-t-transparent" />
-                  )}
-                </div>
-              </button>
-            );
-          })}
-        </div>
+                  
+                  <div className="flex items-center space-x-2">
+                    {isInstalled ? (
+                      <CheckCircle className="text-green-400" size={16} />
+                    ) : (
+                      <ExternalLink className="text-gray-400" size={16} />
+                    )}
+                    {isCurrentlyConnecting && (
+                      <div className="animate-spin rounded-full h-4 w-4 border-2 border-primary border-t-transparent" />
+                    )}
+                  </div>
+                </button>
+              );
+            })}
+          </div>
 
-        <div className="mt-6 p-4 bg-blue-500/10 border border-blue-500/30 rounded-lg">
-          <div className="flex items-start space-x-2">
-            <span className="text-blue-400 mt-0.5">ℹ️</span>
-            <div className="text-xs text-blue-200">
-              <p className="font-medium mb-1">Irys Network Required</p>
-              <p>For full functionality, ensure you're connected to Irys Network (Chain ID: 1270). The app will help you switch networks after connecting.</p>
+          <div className="p-4 bg-blue-500/10 border border-blue-500/30 rounded-lg">
+            <div className="flex items-start space-x-2">
+              <span className="text-blue-400 mt-0.5">ℹ️</span>
+              <div className="text-xs text-blue-200">
+                <p className="font-medium mb-1">Irys Network Required</p>
+                <p>DataSwap operates on Irys Network. You'll be prompted to switch networks after connecting.</p>
+              </div>
             </div>
           </div>
         </div>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }
